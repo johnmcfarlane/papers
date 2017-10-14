@@ -1,2 +1,0 @@
-
-#endif // SG14_FIXED_POINT_SINGLE_HEADER)
