@@ -22,7 +22,7 @@ function(md_to_html MD_FILE FILTER)
     set(HTML_FILE "${FILENAME}.html")
     set(HTML_PATH "${CMAKE_CURRENT_LIST_DIR}/htdocs/${MD_PATH}")
 
-    string(REPLACE "/" "-" TARGET "${MD_PATH}/${FILENAME}")
+    string(REPLACE "/" "-" TARGET "${MD_FILE}")
 
     add_custom_target(
             "${TARGET}" ALL
