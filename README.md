@@ -9,7 +9,7 @@ Papers submitted to the [JTC1/SC22/WG21](http://www.open-std.org/jtc1/sc22/wg21/
 found in [the mailings](http://www.open-std.org/jtc1/sc22/wg21/docs/mailings/).
 
 * [P0037 - Fixed-Point Real Numbers](wg21/p0037.md) 
-  [[R0](wg21/p0037r0.md)][[R1](wg21/p0037r1.md)][[R2](wg21/p0037r2.md)][[R3](wg21/p0037r3.md)][[R4](wg21/p0037r4.md)][[R5](wg21/p0037r5.md)]
+  [[R0](wg21/p0037r0.md)][[R1](wg21/p0037r1.md)][[R2](wg21/p0037r2.md)][[R3](wg21/p0037r3.md)][[R4](wg21/p0037r4.md)][[R5](wg21/p0037r5.md)][[R6](wg21/p0037r6.md)]
 * [P0381 - Numeric Width](wg21/p0381.md)
   [[R0](wg21/p0381r0.md)][[R1](wg21/p0381r1.md)]
 * [P0554 - Composition of Arithmetic Types](wg21/p0554.md)
