@@ -27,7 +27,14 @@ function(md_to_html MD_FILE FILTER)
     add_custom_target(
             "${TARGET}" ALL
             COMMAND mkdir -p "${HTML_PATH}"
-            COMMAND sed ${FILTER} "${CMAKE_CURRENT_LIST_DIR}/${MD_FILE}" | ${PANDOC_EXECUTABLE} --from=commonmark --to=html --standalone --include-in-header=${CMAKE_CURRENT_LIST_DIR}/css.xml -o "${HTML_PATH}/${HTML_FILE}"
+            COMMAND sed ${FILTER} "${CMAKE_CURRENT_LIST_DIR}/${MD_FILE}"
+                | ${PANDOC_EXECUTABLE}
+                    --from=commonmark
+                    --to=html
+                    --standalone
+                    --include-in-header=${CMAKE_CURRENT_LIST_DIR}/css.xml
+                    -o "${HTML_PATH}/${HTML_FILE}"
+                    --metadata pagetitle="${FILENAME}"
     )
 endfunction(md_to_html)
 
