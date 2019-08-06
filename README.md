@@ -24,3 +24,5 @@ found in [the mailings](http://www.open-std.org/jtc1/sc22/wg21/docs/mailings/).
   [[R0](wg21/p1050r0.md)][[R1](wg21/p1050r1.md)]
 * [P1751 - Numeric Type Families](wg21/p1751.md)
   [[R0](wg21/p1751r0.md)]
+* [P1832 - Improving Debug Builds Inline With User Expectation](wg21/p1832.md)
+  [[R0](wg21/p1832r0.md)]
