@@ -26,3 +26,5 @@ found in [the mailings](http://www.open-std.org/jtc1/sc22/wg21/docs/mailings/).
   [[R0](wg21/p1751r0.md)]
 * [P1832 - Improving Debug Builds Inline With User Expectation](wg21/p1832.md)
   [[R0](wg21/p1832r0.md)]
+* [P1846 - Teach `class` Last](wg21/p1846.md)
+  [[R0](wg21/p1846r0.md)]
