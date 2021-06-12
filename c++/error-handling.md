@@ -3,143 +3,157 @@
 ## Introduction
 
 [Handling Disappointment in C++](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0157r0.html)
-observes that errors are just one kind of disappointment
+observes that run-time errors are just one kind of disappointment
 that [a C++ program](https://eel.is/c++draft/basic.link#def:program) might elicit.
 I argue that all disappointment involves the violation of a contract
-and that the correct strategy for handling the violation depends on
-the parameters of the contract.
+and that the correct strategy for handling a violation depends on two things:
+
+1. the parameters of the contract, and
+1. the usage profile of the program.
+
+## Bugs and Errors
+
+Section 4.2 of [P0709R4, Zero-overhead Deterministic Exceptions: Throwing values](https://wg21.link/p0709r4),
+"Proposed cleanup: Don’t report logic errors using exceptions",
+makes clear the distinction between errors and bugs.
+
+Applying this distinction to the contracts above:
+
+* A bug is the violation of a C++ API Contract or the ISO C++ Standard.
+* An error is the violation of a End User Contract.
+
+However, there is an exception to this rule
+which applies to something called the Test User Contract.
+When testing for contract violations,
+the user wishes for bugs to behave far more like errors.
+(I believe that this fact is important to understanding
+why so much disagreement surrounds the C++ Contracts feature.)
 
 ## What Is a Contract?
 
-For our purposes, a contract is
-an _agreement_ between
-a _user_, and
-a _provider_.
+For our purposes, a contract is an _agreement_ between a _user_, and
+a _provider_ about the run-time behaviour of some or all of a program.
+_Violation_ of a contract is what leads to disappointment.
+
+For the sake of simplicity and focus,
+I will concentrate on the obligations imposed on the provider by the contract.
+I believe that extending the principles laid out here
+to obligations imposed on the user is relatively straight-forward.
 
 ## What Are the Parameters of a Contract?
 
 The following set of parameters -- expressed as questions -- are helpful in
 understanding the correct error-handling strategy for a contract.
 
-* Where, and in what form, is the _agreement_ expressed?
-* Who is the _provider_ of the contract?
-* Who is the _user_ of the contract?
-* What is the _enforcement_ of the contract?
-* What are the consequences of user contract _violation_?
-
-Note: we do not ask, "what are the consequences of provider contract violation?"
-***The purpose of this document is to minimise provider contract violation.***
-In doing so, the provider is best able to help the user to effectively satisfy the
-contract.
-
-Note: in most circumstances, the provider of a contract is also the author.
-The most prominent exception is the ISO C++ Standard which is written by
-[a committee](https://isocpp.org/std/the-committee).
+* Where, and in what form, is the agreement expressed?
+* Who is the provider of the contract?
+* Who is the user of the contract?
+* What are the consequences of user contract violation?
 
 ## What Contracts Are There?
 
-In a C++ program, some contracts that matter are...
+In a C++ program, some contracts that matter are as follows.
 
 ### End User Contract
 
-The contract between the user of a program and the implementer of the program is
-an obvious one.
-However, it is important that a program is built in accordance with other contracts
-such as that between the program implementer and the toolchain implementer.
+The ultimate contract that a program must fulfil is to its end user.
+All other contracts below are in support of this fulfilment.
 
-* _agreement_: documentation for the program, possibly including a `--help` option
+* agreement: program documentation, possibly including a `--help` option
   or a 'man' page
-* _provider_: the program author(s)
-* _user_: the program user
-* _enforcement_: the implementer should sanitize input to the program
-* _violation_: the program should emit helpful diagnostics if input lies outside
-  agreed parameters. (On common hosted systems, the program should emit
-  diagnostics on the error stream and exit with a non-zero status.)
+* provider: the program author(s)
+* user: the program user
+* violation: user input is sanitized and ill-formed input is handled through
+  normal control flow (including exception handling)
+
+User input might include command-line parameters, UI interaction, data files.
+Input identified as ill-formed must be rejected by the program.
+
+Where possible rejection should be accompanied by meaningful feedback
+which helps the user correct the input so as to increase the chance of future success.
+For example, on a typical terminal-based system,
+meaningful feedback might take the form of a diagnostic emitted on the error stream,
+followed by exit with non-zero status.
+
+Input that is not rejected must be incapable of causing violations
+of any contracts mentioned below.
+In particular, contract violations could result in security vulnerabilities.
+For programs with exposure to malicious agents, this is critical.
+For safety-critical applications, this is important.
+Fuzz testing is a method which helps identify flaws in input sanitization.
 
 ### Test User Contract
 
 During development, the program -- or portions of it --
 may be built for testing purposes.
 
-* _agreement_: varied, but may be enshrined in a project README, wiki or process
-  document
-* _provider_: the program author(s)
-* _user_: a tester who may be
-  * the implementer of the program testing their code locally,
-  * a dev-ops engineer testing the program remotely as part of a CI pipeline, or
-  * a test engineer testing their code locally
-* _enforcement_: the program should be instrumented with checks of contracts including
-  * API contract expressions (e.g. asserts, pre-conditions and post-conditions),
-  * API contracts (i.e. unit tests), and
-  * language contracts (e.g. by enabling sanitizers).
-* _violation_: ***if the program fails to trap contract violations,
-  the program is more likely to exhibit undefined behaviour and
-  there is increased risk that the provider will violate the End User Contract***.
+The program should be instrumented to test for violations of the contracts below.
+As many violations as is practical should be checked.
+Trapped violations of the contracts below should be treated like user errors
+as described in the End User Contract above,
+i.e. terminate with helpful diagnostic and non-zero status.
+
+* agreement: varied, but may be enshrined in a project README, a wiki or project
+  process document(s)
+* provider: the program author(s)
+* user: a test engineer who may be
+  * an author of the program testing their work,
+  * a test engineer testing the program for correct operation, or
+  * a dev-ops engineer testing the program as part of a CI pipeline
+* violation: If the program fails to identify a violation of one of the contracts
+  below, this is considered a violation of the Test User Contract.
+  A typical remedial step would be to fix an existing test or write a regression test.
+  The contract is restored when the program successfully fails
+  as a result of a violation of contract below.
+
+Examples of contract trapping techniques that are commonly employed are
+
+* API contract expressions (e.g. asserts, pre-conditions and post-conditions),
+* API contract tests (e.g. unit tests), and
+* ISO C++ Standard contracts (e.g. by enabling sanitizers
+  and flags such as `_GLIBCXX_DEBUG` and `_ITERATOR_DEBUG_LEVEL`).
 
 ### ISO C++ Standard
 
 A typical language specification for a C++ program is a revision of
 [the ISO C++ Standard](https://isocpp.org/std/the-standard).
 
-* _agreement_: a recognised set of standing documents including a C++ standard
+* agreement: a recognised set of standing documents including a C++ standard
   such as International Standard ISO/IEC 14882:2020(E), technical specifications,
   etc..
-* _provider_: implementer of the toolchain used to build the program
-* _user_: the program author(s)
-* _enforcement_: optional, via dynamic analysers
-* _violation_: undefined behaviour
+* provider: implementer of the toolchain used to build the program
+* user: the program author(s)
+* violation: undefined behaviour
 
-Note: we are not interested in contract violations resulting in compiler diagnostics.
-These are the best kind of violation: caught early and at no run-time cost.
-The user is encouraged to work in such a way that static typing catches as many errors
-as possible. But otherwise, this document has nothing to say on the matter.
-
-Note that enforcement is optional. There are user violations of the language
-standard on which the provider is not required to act.
-
-Certain bugs may not be reliably detected without impeding portability or violating
-the zero-overhead principle. When these occur, the behaviour of the program is undefined
-and defects including security vulnerabilities may arise.
-
-A program may be ill-formed in ways which are prohibitively difficult to diagnose.
-
-Nevertheless, a toolchain is allowed to enforce such violations and often does.
-***It is highly recommended that the user exploits the capabilities of the toolchain
-to their maximum effect to enhance enforcement in the Test User Contract.***
+Note: while this document focuses on run-time disappointment, authors are encouraged
+to use static typing to surface defects earlier in the development process.
 
 ### Toolchain Contract
 
-* _agreement_: toolchain documentation, including portions of the Language
+* agreement: toolchain documentation, including portions of the Language
   Specification identified as
   [implementation-defined behavior](https://eel.is/c++draft/defns.impl.defined)
-* _provider_: implementer of the toolchain used to build the program
-* _user_: the program author(s)
-* _enforcement_: the toolchain may be certified, but is often maintained through
-  good SDE practices alone
-* _violation_: emit a helpful diagnostic and not output a program
+* provider: implementer of the toolchain used to build the program
+* user: the program author(s)
+* violation: implementation-specific(?)
 
-Observe that the toolchain has an End User Contract.
+Note: being a collection of programs, the toolchain has its own End User Contracts.
 
 ### C++ API Contract
 
-Good API design is a broad subject beyond the scope of this document. But contracts
-are an essential aspect of good API design.
-
-Most C++ APIs center around functions: expectations around their invocation, details
-of the types required by those invocations and their necessary definitions and declarations.
+Contracts play an essential role in good API design.
+Most C++ APIs center around functions:
+expectations around their invocation,
+details of the types required by those invocations, and
+their supporting definitions and declarations.
 
 It is helpful to subcategorise API contracts in descending order of desirability:
 
 1. statically-enforceable;
-1. semantically-enforceable; and
-1. dynamically-enforceable.
+1. dynamically-enforceable; and
+1. manually-enforceable.
 
-#### Statically-Enforceable API Contracts
-
-Thankfully, static typing provides early identification of bugs caused by incorrect
-uses of APIs. This should be considered the provider's earlier line of defence.
-
-Example violation:
+Violation of statically-enforceable API contracts, e.g.
 
 ```c++
 double sqrt(double a);
@@ -150,18 +164,7 @@ void f()
 }
 ```
 
-* _agreement_: function declaration
-* _provider_: program author(s)
-* _user_: other program author(s)
-* _enforcement_: use of function checked by tool-chain via static typing
-* _violation_: diagnostic message (ill-formed), no program output
-
-#### Semantically-Enforceable API Contracts
-
-Some contract violations can only be detected by program authors.
-Good API design can help to avoid such violations.
-
-Example violation:
+and violation of manually-enforceable API contracts, e.g.
 
 ```c++
 double sqrt(double a);
@@ -173,11 +176,7 @@ auto square(double x)
 }
 ```
 
-* _agreement_: documentation
-* _provider_: program author(s)
-* _user_: other program author(s)
-* _enforcement_: careful naming, code review, automated testing
-* _violation_: none
+Are outside the scope of this document.
 
 #### Dynamically-Enforceable API Contracts
 
@@ -195,21 +194,24 @@ void f()
 }
 ```
 
-* _agreement_: documentation, C++ Contracts (TBD)
-* _provider_: program author(s)
-* _user_: other program author(s)
+* agreement: documentation, C++ Contracts (TBD)
+* provider: program author(s)
+* user: other program author(s)
 * _enforcement_: assertions, e.g. [`assert`](https://en.cppreference.com/w/cpp/error/assert)
-* _violation_: undefined behaviour (see discussion)
+* violation: undefined behaviour (see discussion)
 
-## Enforcement of Dynamically-Enforceable Contracts
+## Dynamically-Enforceable Contracts
 
-Between Dynamically-Enforceable API Contracts and the ISO C++ Standard,
-there are a set of bugs which *could* be detected at run-time at a cost.
+Dynamically-Enforceable API Contracts and the ISO C++ Standard
+form a group of contracts whose violation represents run-time bugs.
+Of these, a subset can be expressed formally within the program
+using assertions (including API preconditions and postconditions).
 
-TODO: Bridge the gap between `unreachable` and `assert(false)`.
+These expressions can be evaluated at run-time but typically incur a cost
+which violates the zero-overhead principle in the case of a bug-free program.
 
 Broadly, there are three possible strategies that can be adopted
-at the point where an assertion expression would evaluate to `false`:
+at the point where an assertion would evaluate to `false`:
 
 ### Log-And-Continue Enforcement Strategy
 
@@ -217,11 +219,11 @@ The assert statement could emit a run-time diagnostic regarding the contract vio
 and then continue past the assertion.
 
 This is unwise: the program is known to exhibit undefined behaviour at this
-point. If the _provider_ were able to identify a reason why a violation might have
-occurred they would have identified a bug. If the _provider_ had identified a bug,
-they should have fixed the bug. If the _provider_ had fixed the bug,
+point. If the provider were able to identify a reason why a violation might have
+occurred they would have identified a bug. If the provider had identified a bug,
+they should have fixed the bug. If the provider had fixed the bug,
 they would no longer be able to identify a reason why a violation might have occurred.
-Thus any violation is beyond the comprehension of the _provider_ and "all bets are
+Thus any violation is beyond the comprehension of the provider and "all bets are
 off" regarding the behaviour of the program. This is essentially what UB means.
 
 Nevertheless, under certain constraints
@@ -248,9 +250,25 @@ they are welcome to disable such assumptions. But they are invited, instead, to 
 practices described as part of the Test User Contract which should help identify
 such bugs early on.
 
+***The author strongly encourages the use of assumptions in the implementation of
+assertions in order to unify the set of Dynamically-Enforceable Contracts and to
+simplify the implementation of the Test User Contract.***
+In practice, this entails marking violated assertions as unreachable
+
+```c++
+#define ASSERT(cond) ((cond) ? static_cast<void>(0) : __builtin_unreachable())
+```
+
+which is semantically sound, given violations already must never occur in correctly-written
+C++ programs.
+
+This strategy provides the maximum leeway to support enforcement profiles (below)
+and ensures that the existing ability of sanitizers is extended,
+and that constant expressions containing bugs become ill-formed.
+
 ## Enforcement Profiles
 
-The situation of the end user greatly affect preferred enforcement strategy.
+The domain of the program greatly affects preferred enforcement strategy.
 
 ### Tester
 
@@ -258,7 +276,7 @@ Somebody who is testing the program, e.g.
 
 * a developer investigating a bug,
 * a QA/test engineer, or
-* a CI machine performing automated tests
+* a DevOps engineer programming a CI runner to perform automated tests
 
 will all prefer Trap Enforcement Strategy because bugs are a likelihood
 and performance and stability are secondary concerns.
@@ -267,25 +285,30 @@ and performance and stability are secondary concerns.
 
 A safety-critical system *with* backup/redundancy will also prefer Trap Enforcement
 Strategy because knowingly allowing the program to continue in an incorrect state
-is an unacceptable risk. A life-support system or the autopilot
-in an autonomous vehicle provide good examples.
+is an unacceptable risk.
+A life-support system or the autopilot in an autonomous vehicle provide good examples.
 
 ### Safety-Critical System Without Redundancy
 
 A safety-critical system *without* backup/redundancy
-may prefer Log-And-Continue Enforcement Strategy
+may prefer Log-And-Continue Enforcement Strategy.
 
 ### Performance-Critical/Resource-Constrained
 
 Applications which are performance-critical or resource-constrained
 may favour Prevention Enforcement Strategy.
+
 There must be a high degree of confidence in the correctness of their program.
+Much confidence can be attained through the Test User Contract.
+
+Examples applications include multimedia software entertainment and embedded controllers.
 
 ### Business-Critical Systems
 
-Where money is at stake but lives are not, either the Trap Enforcement Strategy or
-Log-And-Continue Enforcement Strategy should be preferable.
-A RESTful server with persistent state may eventually identify bad state
+Where business interests are at stake but lives are not,
+either the Trap Enforcement Strategy or Log-And-Continue Enforcement Strategy
+may be preferable.
+A RESTful server which persists between requests may eventually identify bad state
 that has lain unnoticed for a while.
 The developer can choose what happens on discovery:
 
@@ -293,29 +316,15 @@ The developer can choose what happens on discovery:
   for a while, or
 * do we 'soldier on' and hope the problem doesn't cause some catastrophe or other?
 
-This choice will be affected by the scale of the fleet,
+This choice will be affected by factors such as the scale of the fleet,
 exposure to malicious agents and the cost of incorrect behaviour.
 
 ## Discussion
 
-### Bugs versus Errors
-
-Section 4.2 of [P0709R4, Zero-overhead Deterministic Exceptions: Throwing values](https://wg21.link/p0709r4),
-"Proposed cleanup: Don’t report logic errors using exceptions",
-makes clear the distinction between errors and bugs.
-
-Applying this distinction to the contracts above:
-
-* A bug is the violation of a C++ API Contract or the ISO C++ Standard.
-* An error is the violation of a End User Contract.
-
-***Special case***: what would be a bug in an End User Contract
-is treated an error in a Test User Contract.
-
 ### Dynamically-Enforceable API Contract Violation is Undefined Behaviour
 
 The popular idea that undefined behaviour is confined to violations of some subset
-of the ISO C++ Standard is wrong and harmful.
+of the ISO C++ Standard is incorrect and harmful.
 
 The standard [describes](https://eel.is/c++draft/defns.undefined) UB as:
 
@@ -325,4 +334,4 @@ In other words, the standard does *not* exclude from the definition of UB
 violations of contracts outside of the ISO C++ Standard.
 
 A more accurate and helpful view of UB is that it is one possible consequence of
-a contract violation that occurs at run-time for which _violation_ is not described.
+a contract violation that occurs at run-time for which consequences are not described.
