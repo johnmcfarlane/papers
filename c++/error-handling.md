@@ -36,9 +36,9 @@ a _provider_ about the run-time behaviour of some or all of a program.
 _Violation_ of a contract is what leads to disappointment.
 
 For the sake of simplicity and focus,
-I will concentrate on the obligations imposed on the provider by the contract.
+I will concentrate on the obligations imposed on the user by the contract.
 I believe that extending the principles laid out here
-to obligations imposed on the user is relatively straight-forward.
+to obligations imposed on the provider is relatively straight-forward.
 
 ## What Are the Parameters of a Contract?
 
