@@ -69,7 +69,7 @@ All other contracts below are in support of this fulfilment.
 User input might include command-line parameters, UI interaction, data files.
 Input identified as ill-formed must be rejected by the program.
 
-Where possible rejection should be accompanied by meaningful feedback
+Where possible, rejection should be accompanied by meaningful feedback
 which helps the user correct the input so as to increase the chance of future success.
 For example, on a typical terminal-based system,
 meaningful feedback might take the form of a diagnostic emitted on the error stream,
