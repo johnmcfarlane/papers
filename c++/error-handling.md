@@ -80,7 +80,7 @@ of any contracts mentioned below.
 In particular, contract violations could result in security vulnerabilities.
 For programs with exposure to malicious agents, this is critical.
 For safety-critical applications, this is important.
-Fuzz testing is a method which helps identify flaws in input sanitization.
+To identify flaws in input sanitization use fuzz testing.
 
 ### Test User Contract
 
