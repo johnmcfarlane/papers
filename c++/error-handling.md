@@ -636,6 +636,32 @@ violations of contracts outside of the ISO C++ Standard.
 A more accurate and helpful view of UB is that it is one possible consequence of
 a contract violation that occurs at run-time for which consequences are not described.
 
+### Contract Violation By Provider
+
+Finally we can return to the matter of _violation by provider_.
+
+The first thing to observe is the distinction between
+
+* preconditions: assertions expressing a user's contractual obligations; typically
+  found on entry to the phase of a program where the contract applies, and
+* postconditions: assertions expressing a provider's contractual obligations;
+  typically found on exit from the phase of a program where the contract applies.
+
+### Kings Are Costly, Type Safety Is Overrated
+
+Slavish observance to any rule always ends badly.
+This is increasingly true in C++ where harmful misuse of the type system confuses:
+
+* constraining the space of possible programs so as to eliminate the bad programs,
+  with
+* constraining the space of possible programs so as to camouflage the bad programs.
+
+```c++
+// good example here
+```
+
+### Libraries Versus Programs
+
 ## Conclusion
 
 * You can choose bug handling strategy easily, change your mind or use different
