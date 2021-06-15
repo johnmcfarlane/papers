@@ -317,7 +317,8 @@ and that constant expressions containing bugs become ill-formed.
 
 ## Enforcement Profiles
 
-The domain of the program greatly affects preferred enforcement strategy.
+The domain of the program greatly affects preferred enforcement strategy
+for Handling Dynamically-Enforceable Contracts.
 
 ### Tester
 
@@ -498,11 +499,13 @@ program author(s) did not anticipate. Out-of-bounds errors, invalid pointers and
 past-the-end iterators may all result if the possible violations by the user of the
 End User Contract are not tested.
 
+See the section on Control Flow Alternatives for further discussion.
+
 ### Type Safety is King
 
-To re-emphasise: while this document details the harm that can happen at run-time,
-the best way to prevent problems is for the program author(s) the use the type system
-to their advantage. Well written APIs mean that most bugs do not survive compilation.
+As if it needed repeating, the best time to prevent problems is early.
+To that end, program author(s) must use the type system to their advantage.
+Well written APIs mean that most bugs do not survive compilation.
 
 Here we see `std::span` used to encapsulate the program's implicitly-bound input
 parameters.
