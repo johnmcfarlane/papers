@@ -53,7 +53,7 @@ _User contract violation_ of a contract is what typically leads to disappointmen
 ### What About Provider Contract Violation?
 
 Both the user and the provider can have contractual obligations.
-However, ***this document concentrates on _user contract violation_***.
+However, ***this document concentrates on violation by user***.
 
 Why? Because the user is typically the less experienced and more error-prone of
 the two parties. Therefore, user contract violation is more common and of greater
@@ -75,7 +75,7 @@ understanding the correct error-handling strategy for a contract.
 * Where, and in what form, is the agreement expressed?
 * Who is the provider of the contract?
 * Who is the user of the contract?
-* What are the consequences of user contract violation?
+* What are the consequences of violation by user?
 
 ## What Contracts Are There?
 
@@ -90,7 +90,7 @@ All other contracts below are in support of this fulfilment.
   or a 'man' page
 * provider: the program author(s)
 * user: the program user
-* user contract violation: user input is sanitized and ill-formed input is handled
+* violation by user: user input is sanitized and ill-formed input is handled
   early through normal control flow (including exception handling)
 
 User input might include command-line parameters, UI interaction, data files.
@@ -139,7 +139,7 @@ are not a violation of the Test User Contract.
   * an author of the program testing their work,
   * a test engineer testing the program for correct operation, or
   * a dev-ops engineer testing the program as part of a CI pipeline
-* user contract violation:
+* violation by user:
   * If the analysis tool advertises that it will trap a particular
     contract violation and fails to do so, that is a violation of this contract
     and considered a defect of the tool.
@@ -165,7 +165,7 @@ A typical language specification for a C++ program is a revision of
   etc..
 * provider: implementer of the toolchain used to build the program
 * user: the program author(s)
-* user contract violation: undefined behaviour
+* violation by user: undefined behaviour
 
 Note: while this document focuses on run-time disappointment, authors are encouraged
 to use static typing to surface defects earlier in the development process.
@@ -177,7 +177,7 @@ to use static typing to surface defects earlier in the development process.
   [implementation-defined behavior](https://eel.is/c++draft/defns.impl.defined)
 * provider: implementer of the toolchain used to build the program
 * user: the program author(s)
-* user contract violation: implementation-specific(?)
+* violation by user: implementation-specific(?)
 
 Note: being a collection of programs, the toolchain has its own End User Contracts.
 
@@ -240,7 +240,7 @@ void f()
 * provider: program author(s)
 * user: other program author(s)
 * _enforcement_: assertions, e.g. [`assert`](https://en.cppreference.com/w/cpp/error/assert)
-* user contract violation: undefined behaviour (see discussion)
+* violation by user: undefined behaviour (see discussion)
 
 ## Strategies For Handling Dynamically-Enforceable Contracts
 
