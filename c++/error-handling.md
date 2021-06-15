@@ -522,6 +522,103 @@ auto main(int argc, char* argv[]) -> int
 }
 ```
 
+## Control Flow Alternatives
+
+### Return Values
+
+The Example Program (above) is simple enough that Boolean return values suffice as
+a method for sending news of failure back to the calling process.
+
+However, things get complicated quickly and several alternatives should be considered.
+Unfortunately, this choice cannot be changed easily once code is written.
+
+### Vocabulary Return Types
+
+One disadvantage of reporting the success of the function as the return value is
+that C++ functions only return one object.
+APIs are more readable if they return the expected results of a successful invocation.
+So returning errors gets in the way of readability.
+
+To one degree or another, types such as `expected`, `outcome` and `optional` are
+capable of packing together both the desired result and the successfulness.
+They offer determinism and 
+
+### Exceptions
+
+Exceptions are well-suited to error handling. They keep the 'happy path' free of
+error propagation logic which should make them more efficient in the case that nothing
+goes wrong. Indeed, [they are often the most efficient solution](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1947r0.pdf)
+when where there is high confidence that throwing is rare.
+
+Exceptions are also a flexible solution which allow error handling code to be localised
+within the call graph: imagine a program which needs to report defects differently
+in separate sections of the code. In one section, errors are logged to a file. In
+another section, errors are reported to a bug-tracking server. And in both sections,
+the program is not allowed to access any IO. Such constraints can be overcome trivially
+using just two `catch` blocks.
+
+However, such versatility is rarely necessary in real applications. And exceptions
+bring other costs.
+
+* Exceptions require additional [space](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1640r1.html),
+  which can render them impractical in small systems such as microcontrollers,
+* When thrown, they are costly in [time and determinism](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1886r0.html),
+  which can break real-time system constraints, violating the End User Contract.
+* Even when not thrown, they can make it difficult to reason about control flow,
+  which has implications for both developers and optimisers.
+
+### Abnormal Program Termination
+
+A program can be stopped quickly via APIs such as `std::terminate` and `std::abort`.
+
+A simple error-handling function can be used much like the assert routine:
+
+```c++
+// error handler function
+template <typename... args>
+[[noreturn]] void eg_fatal(args&&... parameters)
+{
+  fmt::print(stderr, std::forward<args>(parameters)...);
+  fmt::print("Try --help\n");
+  std::abort();
+}
+```
+
+Usage couldn't be much simpler:
+
+```c++
+  if (actual_num_params != expected_num_params) {
+    eg_fatal("Wrong number of arguments provided. Expected={}; Actual={}\n", actual_num_params, expected_num_params);
+  }
+```
+
+This approach is often discouraged in C++ programs. The main reason is that it typically
+bypasses destructors. That's not such a worry if the program is already in a bad
+state, so terminating in reaction to contract violations is relatively palatable.
+And destructors in a modern, well designed system are only important to a running
+process: memory, file descriptors and peripherals should all be freed up by
+the system once the owning process is ended.
+
+So with caveats, this can be the best approach for reacting to violations of the
+End User Contract -- as well as contracts which cause UB. In profile,
+Safety-Critical System With Redundancy, the requirement to 'fail fast' can be well
+served by this approach. And in profile, Business-Critical Systems, the problems
+associated with bypassing destructors may not be significant.
+
+### Push UB Onto The End User
+
+The program might be part of a larger system which is internal to a group of developers.
+For example, essential data might be stored in a read-only filesystem which is essential
+to the system. Loss of this filesystem might be unrecoverable. In such a circumstance,
+why not simply assume that the filesystem is there? Why not treat the End User Contract
+in the same way as a C++ API contract?
+
+This is entirely possible but the implications must be fully understood.
+There is reduced freedom to invoke the program with ill-formed input.
+There is heightened risk of compromise, corruption or critical failure if the
+program is ever invoked outside the parameters of the End User Contract.
+Even when it is possible, it is rarely worthwhile taking this risk.
+
 ## Discussion
 
 ### Dynamically-Enforceable API Contract Violation is Undefined Behaviour
