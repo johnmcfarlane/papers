@@ -55,9 +55,13 @@ _User contract violation_ of a contract is what typically leads to disappointmen
 Both the user and the provider can have contractual obligations.
 However, ***this document concentrates on violation by user***.
 
-Why? Because the user is typically the less experienced and more error-prone of
-the two parties. Therefore, user contract violation is more common and of greater
-concern.
+Why?
+Firstly, it's simpler to focus on one side of the contract and apply the findings
+to the other side later on.
+Secondly, the user is typically the less experienced and more error-prone of
+the two parties. Therefore, violation by user is more common. It seems highly likely
+that more software defects are caused by the user, rather than the provider
+of a contract.
 
 Nowhere is this clearer than in the case of the Toolchain Contract (below)
 where the toolchain provider is far less likely to be the cause of a contract
