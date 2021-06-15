@@ -114,24 +114,39 @@ To identify flaws in input sanitization use fuzz testing.
 During development, the program -- or portions of it --
 may be built for testing purposes.
 
-The program should be instrumented to test for violations of the contracts below.
+The program should be instrumented to test for violations of the below contracts.
 As many violations as is practical should be checked.
-Trapped violations of the contracts below should be treated like user errors
+Trapped contract violations should be treated like user errors
 as described in the End User Contract above,
 i.e. terminate with helpful diagnostic and non-zero status.
 
+***Important:*** this fundamentally changes the status of some violations from bugs
+to errors.
+It is important to understand that what may be considered a bug outside of testing
+(e.g. signed integer overflow or passing an unsorted sequence to `lower_bound`)
+is instead considered an error and treated differently.
+Bugs written by the program author(s) which surface during testing
+are not a violation of the Test User Contract.
+
 * agreement: varied, but may be enshrined in a project README, a wiki or project
   process document(s)
-* provider: the program author(s)
+* provider:
+  * analysis tool providers whose tools flag violations -- especially of the
+    ISO C++ Standard and Toolchain Contract, or
+  * C++ API Contract providers who are encouraged to assert that their APIs are used
+    correctly.
 * user: a test engineer who may be
   * an author of the program testing their work,
   * a test engineer testing the program for correct operation, or
   * a dev-ops engineer testing the program as part of a CI pipeline
-* violation: If the program fails to identify a violation of one of the contracts
-  below, this is considered a violation of the Test User Contract.
-  A typical remedial step would be to fix an existing test or write a regression test.
-  The contract is restored when the program successfully fails
-  as a result of a violation of contract below.
+* user contract violation:
+  * If the analysis tool advertises that it will trap a particular
+    contract violation and fails to do so, that is a violation of this contract
+    and considered a defect of the tool.
+  * If a C++ API Contract violation could reasonably be identified (e.g. through
+    an assertion) but does not, that is a violation of the Test User Contract.
+  * The contract is restored when the program successfully fails
+    as a result of a violation of contracts below.
 
 Examples of contract trapping techniques that are commonly employed are
 
