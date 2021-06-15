@@ -48,12 +48,24 @@ why so much disagreement surrounds the C++ Contracts feature.)
 
 For our purposes, a contract is an _agreement_ between a _user_, and
 a _provider_ about the run-time behaviour of some or all of a program.
-_Violation_ of a contract is what leads to disappointment.
+_User contract violation_ of a contract is what typically leads to disappointment.
 
-For the sake of simplicity and focus,
-I will concentrate on the obligations imposed on the user by the contract.
-I believe that extending the principles laid out here
-to obligations imposed on the provider is relatively straight-forward.
+### What About Provider Contract Violation?
+
+Both the user and the provider can have contractual obligations.
+However, ***this document concentrates on _user contract violation_***.
+
+Why? Because the user is typically the less experienced and more error-prone of
+the two parties. Therefore, user contract violation is more common and of greater
+concern.
+
+Nowhere is this clearer than in the case of the Toolchain Contract (below)
+where the toolchain provider is far less likely to be the cause of a contract
+violation by virtue of the significant rigour, effort and feedback poured into such
+tools.
+
+It is also important to note that providing timely corrective feedback to the _user_
+is an effective way to help them learn their craft with less supervision.
 
 ## What Are the Parameters of a Contract?
 
@@ -78,11 +90,11 @@ All other contracts below are in support of this fulfilment.
   or a 'man' page
 * provider: the program author(s)
 * user: the program user
-* violation: user input is sanitized and ill-formed input is handled through
-  normal control flow (including exception handling)
+* user contract violation: user input is sanitized and ill-formed input is handled
+  early through normal control flow (including exception handling)
 
 User input might include command-line parameters, UI interaction, data files.
-Input identified as ill-formed must be rejected by the program.
+Input identified as ill-formed must be rejected early by the program.
 
 Where possible, rejection should be accompanied by meaningful feedback
 which helps the user correct the input so as to increase the chance of future success.
@@ -138,7 +150,7 @@ A typical language specification for a C++ program is a revision of
   etc..
 * provider: implementer of the toolchain used to build the program
 * user: the program author(s)
-* violation: undefined behaviour
+* user contract violation: undefined behaviour
 
 Note: while this document focuses on run-time disappointment, authors are encouraged
 to use static typing to surface defects earlier in the development process.
@@ -150,7 +162,7 @@ to use static typing to surface defects earlier in the development process.
   [implementation-defined behavior](https://eel.is/c++draft/defns.impl.defined)
 * provider: implementer of the toolchain used to build the program
 * user: the program author(s)
-* violation: implementation-specific(?)
+* user contract violation: implementation-specific(?)
 
 Note: being a collection of programs, the toolchain has its own End User Contracts.
 
@@ -213,7 +225,7 @@ void f()
 * provider: program author(s)
 * user: other program author(s)
 * _enforcement_: assertions, e.g. [`assert`](https://en.cppreference.com/w/cpp/error/assert)
-* violation: undefined behaviour (see discussion)
+* user contract violation: undefined behaviour (see discussion)
 
 ## Strategies For Handling Dynamically-Enforceable Contracts
 
