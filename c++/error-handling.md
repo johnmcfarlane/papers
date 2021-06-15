@@ -1,5 +1,20 @@
 # Contractual Disappointment in C++
 
+This document provides guidance on how to write robust C++ programs.
+
+For much of the document, I explore the factors related to how error-handling choices
+are made:
+
+* What are the types of problem that a running program might encounter?
+* What contracts are in play?
+* Of these contracts, which ones relate to bugs?
+* What are the strategies for reacting to bugs in a running program?
+* Who writes programs and what strategies might they prefer?
+
+Then the different elements are brought together in a simple program which
+illustrates how errors and bugs are treated very differently and how this
+isn't affected by bug-handling strategies.
+
 ## Introduction
 
 [Handling Disappointment in C++](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0157r0.html)
@@ -200,7 +215,7 @@ void f()
 * _enforcement_: assertions, e.g. [`assert`](https://en.cppreference.com/w/cpp/error/assert)
 * violation: undefined behaviour (see discussion)
 
-## Dynamically-Enforceable Contracts
+## Strategies For Handling Dynamically-Enforceable Contracts
 
 Dynamically-Enforceable API Contracts and the ISO C++ Standard
 form a group of contracts whose violation represents run-time bugs.
@@ -216,17 +231,20 @@ at the point where an assertion would evaluate to `false`:
 ### Log-And-Continue Enforcement Strategy
 
 The assert statement could emit a run-time diagnostic regarding the contract violation
-and then continue past the assertion.
+and then continue past the assertion. This is not ideal: the program is known to
+exhibit undefined behaviour at this point.
 
-This is unwise: the program is known to exhibit undefined behaviour at this
-point. If the provider were able to identify a reason why a violation might have
-occurred they would have identified a bug. If the provider had identified a bug,
-they should have fixed the bug. If the provider had fixed the bug,
-they would no longer be able to identify a reason why a violation might have occurred.
-Thus any violation is beyond the comprehension of the provider and "all bets are
-off" regarding the behaviour of the program. This is essentially what UB means.
+There is a strong desire to distinguish between contract violations that
+exhibit UB and ones which are somehow safe. But this distinction is false.
+An assert expression needs to be something that is inconceivable. As such, its cause
+can only be explained by some unforeseen error earlier in the control flow.
+This in turn leaves the door open to UB caused by the error elsewhere.
+The horse has already bolted, so to speak.
 
-Nevertheless, under certain constraints
+Nevertheless, under certain constraints this strategy is appealing. If the cost of
+terminating the program is greater than the risks of undefined behaviour, then
+a programmer might choose this path. It would be sensible to do everything possible
+to mitigate the effects, e.g. by disabling optimisations.
 
 ### Trap Enforcement Strategy
 
@@ -319,6 +337,157 @@ The developer can choose what happens on discovery:
 This choice will be affected by factors such as the scale of the fleet,
 exposure to malicious agents and the cost of incorrect behaviour.
 
+## Example Program
+
+The following excerpts from the program hosted
+[here](https://github.com/johnmcfarlane/eg-error-handling/blob/6bee393c245debf4ef921f8518b1b6a89a477b25/src/main.cpp),
+illustrate the recommended approach.
+
+### Assertion Logic
+
+Here is an example assert function which illustrates the above Strategies For Handling
+Dynamically-Enforceable Contracts. It is compatible with some modern tool-chains.
+
+```c++
+constexpr void eg_assert(bool condition)
+{
+  if (condition) {
+    return;
+  }
+
+#if defined(LOG_AND_CONTINUE_STRATEGY)
+  fmt::print(stderr, "a C++ API violation occurred\n");
+#elif defined(TRAP_STRATEGY)
+  std::terminate();
+#elif defined(PREVENTION_STRATEGY)
+  __builtin_unreachable();
+#endif
+}
+```
+
+### C++ API
+
+The following function, `number_to_letter`, illustrates a C++ API which might make
+use of the `eg_assert` facility:
+
+```c++
+constexpr auto min_number{1};
+constexpr auto max_number{26};
+
+/// precondition: number is in range [1..26]
+constexpr auto number_to_letter(int number)
+{
+  eg_assert(number >= min_number);
+  eg_assert(number <= max_number);
+  return char(number - min_number + 'A');
+}
+```
+
+Calls to this API *must* observe the contract. In production code, this isn't
+open to negotiation. In a C++ program, the contract is typically documented
+in comments. Other language allow some of the preconditions and postconditions to
+be expressed directly in the code using predicates of the kind passed into `eg_assert`.
+
+### Calling a C++ API
+
+APIs within a program should never try to deal with Dynamically-Enforceable Contract
+violations resulting from incorrect invocation by users of the API.
+The set of possible violations is often significant and can quickly clutter the implementation.
+
+```c++
+/// @pre Requires sanitized data, i.e. number in the range 1<=number<=26.
+void sanitized_run(int number)
+{
+  fmt::print("{}", number_to_letter(number));
+}
+```
+
+### Sanitizing Input
+
+Code which digests input into the program is a very different matter.
+
+The program's author(s) cannot assume that its input is error-free.
+In order to be confident that no Dynamically-Enforceable Contracts are violated,
+input must first be sanitized.
+
+In this example, the command line parameter is converted to an `int`.
+
+```c++
+auto unsanitized_run(std::span<char*> args)
+{
+  // Verify correct number of arguments.
+  constexpr auto expected_num_params{1};
+  auto const actual_num_params{args.size()};
+  if (actual_num_params != expected_num_params) {
+    // End User Contract violation; emit diagnostic and exit with non-zero exit code
+    fmt::print(
+        stderr, "Wrong number of arguments provided. Expected={}; Actual={}\n", actual_num_params, expected_num_params);
+    return false;
+  }
+
+  // Print help text if requested.
+  auto const argument{std::string_view{args[0]}};
+  if (argument == "--help"sv) {
+    // **Not** an End User Contract violation;
+    // print to stdout and exit with zero status code
+    fmt::print("This program prints the letter of the alphabet at the given position.\n");
+    fmt::print("Usage: letter N\n");
+    fmt::print("N: number between {} and {}\n", min_number, max_number);
+    return true;
+  }
+
+  // Convert the argument to a number.
+  // Note: this further enhances type safety.
+  int number;
+  auto [ptr, ec] = std::from_chars(std::begin(argument), std::end(argument), number);
+  if (ec == std::errc::invalid_argument || ptr != std::end(argument)) {
+    // End User Contract violation; emit diagnostic and exit with non-zero exit code
+    fmt::print(stderr, "Unrecognized number, '{}'\n", argument);
+    return false;
+  }
+
+  // Verify the range of number.
+  if (number < min_number || number > max_number) {
+    // End User Contract violation; emit diagnostic and exit with non-zero exit code
+    fmt::print(stderr, "Out-of-range number, {}\n", number);
+    return false;
+  }
+
+  // The input is now successfully sanitized. If the program gets this far,
+  // the End User Contract was not violated by the user.
+  sanitized_run(number);
+
+  return true;
+}
+```
+
+In contrast with `sanitized_run`, `unsanitized_run` does a lot of validating of data.
+Even if the users of the program are 'friendly', they may make mistakes which the
+program author(s) did not anticipate. Out-of-bounds errors, invalid pointers and
+past-the-end iterators may all result if the possible violations by the user of the
+End User Contract are not tested.
+
+### Type Safety is King
+
+To re-emphasise: while this document details the harm that can happen at run-time,
+the best way to prevent problems is for the program author(s) the use the type system
+to their advantage. Well written APIs mean that most bugs do not survive compilation.
+
+Here we see `std::span` used to encapsulate the program's implicitly-bound input
+parameters.
+
+```c++
+auto main(int argc, char* argv[]) -> int
+{
+  if (!unsanitized_run(std::span{argv + 1, std::size_t(argc) - 1U})) {
+    fmt::print("Try --help\n");
+    return EXIT_FAILURE;
+  }
+
+  return EXIT_SUCCESS;
+}
+```
+
 ## Discussion
 
 ### Dynamically-Enforceable API Contract Violation is Undefined Behaviour
@@ -335,3 +504,9 @@ violations of contracts outside of the ISO C++ Standard.
 
 A more accurate and helpful view of UB is that it is one possible consequence of
 a contract violation that occurs at run-time for which consequences are not described.
+
+## Conclusion
+
+TODO:
+* Sometimes, a bug in a program isn't a bug, it's an error.
+* UB is all around.
