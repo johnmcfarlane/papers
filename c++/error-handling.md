@@ -638,6 +638,9 @@ a contract violation that occurs at run-time for which consequences are not desc
 
 ## Conclusion
 
-TODO:
+* You can choose bug handling strategy easily, change your mind or use different
+  strategies in different builds. 
+* But you cannot so easily change error-handling strategies.
 * Sometimes, a bug in a program isn't a bug, it's an error.
 * UB is all around.
+*
