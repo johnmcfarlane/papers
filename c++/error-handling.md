@@ -662,6 +662,8 @@ This is increasingly true in C++ where harmful misuse of the type system confuse
 
 ### Libraries Versus Programs
 
+### Sanitizer Before You Optimise
+
 ## Conclusion
 
 * You can choose bug handling strategy easily, change your mind or use different
