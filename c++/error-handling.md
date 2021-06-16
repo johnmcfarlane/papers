@@ -50,6 +50,16 @@ For our purposes, a contract is an _agreement_ between a _user_, and
 a _provider_ about the run-time behaviour of some or all of a program.
 _User contract violation_ of a contract is what typically leads to disappointment.
 
+## What Are the Parameters of a Contract?
+
+The following set of parameters -- expressed as questions -- are helpful in
+understanding the correct error-handling strategy for a contract.
+
+* Where, and in what form, is the agreement expressed?
+* Who is the provider of the contract?
+* Who is the user of the contract?
+* What are the consequences of violation by user?
+
 ### What About Provider Contract Violation?
 
 Both the user and the provider can have contractual obligations.
@@ -71,15 +81,6 @@ tools.
 It is also important to note that providing timely corrective feedback to the _user_
 is an effective way to help them learn their craft with less supervision.
 
-## What Are the Parameters of a Contract?
-
-The following set of parameters -- expressed as questions -- are helpful in
-understanding the correct error-handling strategy for a contract.
-
-* Where, and in what form, is the agreement expressed?
-* Who is the provider of the contract?
-* Who is the user of the contract?
-* What are the consequences of violation by user?
 
 ## What Contracts Are There?
 
