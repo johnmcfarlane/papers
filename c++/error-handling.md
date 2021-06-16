@@ -631,6 +631,14 @@ Even when it is possible, it is rarely worthwhile taking this risk.
 
 ## Discussion
 
+### Choices for Contract Users
+
+There should be as few as possible. The user is the greatest point of failure.
+Where possible, they should not be distracted by the dilemmas of API design.
+Whether API users, End users or any other kind of user, their life should be made
+as easy as possible. This does not mean defensive APIs which hide their mistakes.
+Their mistakes should be made obvious to them as quickly and clearly as possible.
+
 ### Dynamically-Enforceable API Contract Violation is Undefined Behaviour
 
 The popular idea that undefined behaviour is confined to violations of some subset
