@@ -93,7 +93,7 @@ All other contracts below are in support of this fulfilment.
 
 * agreement: program documentation, possibly including a `--help` option
   or a 'man' page
-* provider: the program author(s)
+* provider: the program developer(s)
 * user: the program user
 * violation by user: user input is sanitized and ill-formed input is handled
   early through normal control flow (including exception handling)
@@ -130,7 +130,7 @@ to errors.
 It is important to understand that what may be considered a bug outside of testing
 (e.g. signed integer overflow or passing an unsorted sequence to `lower_bound`)
 is instead considered an error and treated differently.
-Bugs written by the program author(s) which surface during testing
+Bugs written by the program developer(s) which surface during testing
 are not a violation of the Test User Contract.
 
 * agreement: varied, but may be enshrined in a project README, a wiki or project
@@ -141,7 +141,7 @@ are not a violation of the Test User Contract.
   * C++ API Contract providers who are encouraged to assert that their APIs are used
     correctly.
 * user: a test engineer who may be
-  * an author of the program testing their work,
+  * an program developer testing their work,
   * a test engineer testing the program for correct operation, or
   * a dev-ops engineer testing the program as part of a CI pipeline
 * violation by user:
@@ -169,10 +169,10 @@ A typical language specification for a C++ program is a revision of
   such as International Standard ISO/IEC 14882:2020(E), technical specifications,
   etc..
 * provider: implementer of the toolchain used to build the program
-* user: the program author(s)
+* user: the program developer(s)
 * violation by user: undefined behaviour
 
-Note: while this document focuses on run-time disappointment, authors are encouraged
+Note: while this document focuses on run-time disappointment, developers are encouraged
 to use static typing to surface defects earlier in the development process.
 
 ### Toolchain Contract
@@ -181,7 +181,7 @@ to use static typing to surface defects earlier in the development process.
   Specification identified as
   [implementation-defined behavior](https://eel.is/c++draft/defns.impl.defined)
 * provider: implementer of the toolchain used to build the program
-* user: the program author(s)
+* user: the program developer(s)
 * violation by user: implementation-specific(?)
 
 Note: being a collection of programs, the toolchain has its own End User Contracts.
@@ -242,8 +242,8 @@ void f()
 ```
 
 * agreement: documentation, C++ Contracts (TBD)
-* provider: program author(s)
-* user: other program author(s)
+* provider: program developer(s)
+* user: other program developer(s)
 * _enforcement_: assertions, e.g. [`assert`](https://en.cppreference.com/w/cpp/error/assert)
 * violation by user: undefined behaviour (see discussion)
 
@@ -439,7 +439,7 @@ void sanitized_run(int number)
 
 Code which digests input into the program is a very different matter.
 
-The program's author(s) cannot assume that its input is error-free.
+The program's developer(s) cannot assume that its input is error-free.
 In order to be confident that no Dynamically-Enforceable Contracts are violated,
 input must first be sanitized.
 
@@ -496,7 +496,7 @@ auto unsanitized_run(std::span<char*> args)
 
 In contrast with `sanitized_run`, `unsanitized_run` does a lot of validating of data.
 Even if the users of the program are 'friendly', they may make mistakes which the
-program author(s) did not anticipate. Out-of-bounds errors, invalid pointers and
+program developer(s) did not anticipate. Out-of-bounds errors, invalid pointers and
 past-the-end iterators may all result if the possible violations by the user of the
 End User Contract are not tested.
 
@@ -505,7 +505,7 @@ See End User Provider Strategies for further discussion.
 ### Type Safety is King
 
 As if it needed repeating, the best time to prevent problems is early.
-To that end, program author(s) must use the type system to their advantage.
+To that end, program developer(s) must use the type system to their advantage.
 Well written APIs mean that most bugs do not survive compilation.
 
 Here we see `std::span` used to encapsulate the program's implicitly-bound input
