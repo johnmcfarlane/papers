@@ -32,7 +32,7 @@ Section 4.2 of [P0709R4, Zero-overhead Deterministic Exceptions: Throwing values
 "Proposed cleanup: Don’t report logic errors using exceptions",
 makes clear the distinction between errors and bugs.
 
-Applying this distinction to the contracts above:
+Applying this distinction to the contracts below:
 
 * A bug is the violation of a C++ API Contract or the ISO C++ Standard.
 * An error is the violation of a End User Contract.
@@ -44,13 +44,13 @@ the user wishes for bugs to behave far more like errors.
 (I believe that this fact is important to understanding
 why so much disagreement surrounds the C++ Contracts feature.)
 
-## What Is a Contract?
+## About Contracts
 
 For our purposes, a contract is an _agreement_ between a _user_, and
 a _provider_ about the run-time behaviour of some or all of a program.
 _User contract violation_ of a contract is what typically leads to disappointment.
 
-## What Are the Parameters of a Contract?
+### Salient Parameters of a Contract
 
 The following set of parameters -- expressed as questions -- are helpful in
 understanding the correct error-handling strategy for a contract.
@@ -58,12 +58,12 @@ understanding the correct error-handling strategy for a contract.
 * Where, and in what form, is the agreement expressed?
 * Who is the provider of the contract?
 * Who is the user of the contract?
-* What are the consequences of violation by user?
+* What are the consequences of user contract violation?
 
 ### What About Provider Contract Violation?
 
-Both the user and the provider can have contractual obligations.
-However, ***this document concentrates on violation by user***.
+Both the user and the provider have contractual obligations.
+However, ***this document concentrates on user contract violation***.
 
 Why?
 Firstly, it's simpler to focus on one side of the contract and apply the findings
@@ -141,7 +141,7 @@ are not a violation of the Test User Contract.
   * C++ API Contract providers who are encouraged to assert that their APIs are used
     correctly.
 * user: a test engineer who may be
-  * an program developer testing their work,
+  * a program developer testing their work,
   * a test engineer testing the program for correct operation, or
   * a dev-ops engineer testing the program as part of a CI pipeline
 * violation by user:
@@ -227,7 +227,7 @@ Are outside the scope of this document.
 
 #### Dynamically-Enforceable API Contracts
 
-The provider should specify correct API usage.
+The provider should communicate correct API usage to the user.
 
 Example violation:
 
