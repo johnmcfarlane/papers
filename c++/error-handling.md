@@ -305,7 +305,7 @@ they are welcome to disable such assumptions. But they are invited, instead, to 
 practices described as part of the Test User Contract which should help identify
 such bugs early on.
 
-***The author strongly encourages the use of assumptions in the implementation of
+***I strongly encourages the use of assumptions in the implementation of
 assertions in order to unify the set of Dynamically-Enforceable Contracts and to
 simplify the implementation of the Test User Contract.***
 In practice, this entails marking violated assertions as unreachable
