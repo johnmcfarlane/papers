@@ -499,7 +499,7 @@ program author(s) did not anticipate. Out-of-bounds errors, invalid pointers and
 past-the-end iterators may all result if the possible violations by the user of the
 End User Contract are not tested.
 
-See the section on Control Flow Alternatives for further discussion.
+See End User Provider Strategies for further discussion.
 
 ### Type Safety is King
 
@@ -522,7 +522,11 @@ auto main(int argc, char* argv[]) -> int
 }
 ```
 
-## Control Flow Alternatives
+## End User Provider Strategies
+
+The End User provider is charged with enforcement of the End User Contract,
+e.g. by emitting diagnostics and returning non-zero status codes.
+There are several approaches that can be taken.
 
 ### Return Values
 
