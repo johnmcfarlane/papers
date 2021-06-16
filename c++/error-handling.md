@@ -247,8 +247,8 @@ void f()
 ```
 
 * agreement: documentation, C++ Contracts (TBD)
-* provider: program developer(s)
-* user: other program developer(s)
+* provider: C++ API implementer; often the program developer(s)
+* user: program developer(s)
 * _enforcement_: assertions, e.g. [`assert`](https://en.cppreference.com/w/cpp/error/assert)
 * violation by user: undefined behaviour (see discussion)
 
