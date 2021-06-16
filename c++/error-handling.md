@@ -81,6 +81,11 @@ tools.
 It is also important to note that providing timely corrective feedback to the _user_
 is an effective way to help them learn their craft with less supervision.
 
+### What About Contract Author?
+
+Authors are often also providers, sometimes users and occasionally neither.
+The quality of their contracts affects the chances of avoid violations.
+Beyond this, they are mentioned very little.
 
 ## What Contracts Are There?
 
