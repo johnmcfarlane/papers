@@ -34,11 +34,14 @@ makes clear the distinction between errors and bugs.
 
 Applying this distinction to the contracts below:
 
-* A bug is the violation of a C++ API Contract or the ISO C++ Standard.
-* An error is the violation of a End User Contract.
+* A _bug_ is the violation of a C++ API Contract or the ISO C++ Standard.
+* An _error_ is the violation of an End User Contract.
+* (A third category, _abstract machine corruption_ is identified, which includes
+  heap exhaustion and stack overflow. But it is not of interest as it does not relate
+  to any contract involving C++ program developers.)
 
-However, there is an exception to this rule
-which applies to something called the Test User Contract.
+There is one time when the bug versus error distinction breaks down.
+That is when considering the Test User Contract.
 When testing for contract violations,
 the user wishes for bugs to behave far more like errors.
 (I believe that this fact is important to understanding
