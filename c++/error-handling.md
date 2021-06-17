@@ -631,32 +631,9 @@ Even when it is possible, it is rarely worthwhile taking this risk.
 
 ## Discussion
 
-### Choices for Contract Users
+### Provider Contract Violation
 
-There should be as few as possible. The user is the greatest point of failure.
-Where possible, they should not be distracted by the dilemmas of API design.
-Whether API users, End users or any other kind of user, their life should be made
-as easy as possible. This does not mean defensive APIs which hide their mistakes.
-Their mistakes should be made obvious to them as quickly and clearly as possible.
-
-### Dynamically-Enforceable API Contract Violation is Undefined Behaviour
-
-The popular idea that undefined behaviour is confined to violations of some subset
-of the ISO C++ Standard is incorrect and harmful.
-
-The standard [describes](https://eel.is/c++draft/defns.undefined) UB as:
-
-> behavior for which this document imposes no requirements
-
-In other words, the standard does *not* exclude from the definition of UB
-violations of contracts outside of the ISO C++ Standard.
-
-A more accurate and helpful view of UB is that it is one possible consequence of
-a contract violation that occurs at run-time for which consequences are not described.
-
-### Contract Violation By Provider
-
-Finally we can return to the matter of _violation by provider_.
+We can now return to the question of _provider contract violation_.
 
 The first thing to observe is the distinction between
 
@@ -665,18 +642,79 @@ The first thing to observe is the distinction between
 * postconditions: assertions expressing a provider's contractual obligations;
   typically found on exit from the phase of a program where the contract applies.
 
-### Kings Are Costly, Type Safety Is Overrated
+### Choices for Contract Users
 
-Slavish observance to any rule always ends badly.
-This is increasingly true in C++ where harmful misuse of the type system confuses:
+There should be as few as possible. The user is the greatest point of failure.
+Where possible, they should not be distracted by the dilemmas of API design.
+Whether API users, End users or any other kind of user, their life should be made
+as easy as possible. This does not mean defensive APIs which hide their mistakes.
+Their mistakes should be made obvious to them as quickly and clearly as possible.
 
-* constraining the space of possible programs so as to eliminate the bad programs,
-  with
-* constraining the space of possible programs so as to camouflage the bad programs.
+### API Contract Violation is Undefined Behaviour
+
+It is a common misconception that the term _undefined behaviour_
+refers only to violations of some subset of the ISO C++ Standard.
+
+The standard [describes](https://eel.is/c++draft/defns.undefined) UB as:
+
+> behavior for which this document imposes no requirements
+
+In other words, the standard does *not* exclude violations of contracts
+outside of the ISO C++ Standard.
+
+A more accurate and helpful view of UB is that it is one possible results of
+a contract violation that occurs at run-time, for which consequences are not described.
+
+Part of the confusion is the (false) assumption that because a C++ API has a definition,
+that this somehow means that its behaviour is also defined.
+Let's look again at the function `number_to_letter`.
 
 ```c++
-// good example here
+/// precondition: number is in range [1..26]
+constexpr auto number_to_letter(int number)
+{
+  return char(number - min_number + 'A');
+}
 ```
+
+It so happens that we can see the definition of `number_to_letter`. Even if we couldn't,
+we might feel confident guessing roughly how it was implemented.
+And (assertions aside) we might feel confident to say that the function does not
+exhibit undefined behaviour, even when the precondition is violated.
+
+We would be committing a grave error.
+
+Firstly, the author has effectively limited the warranty of the contract.
+They are declining to make a guarantee about what the result of the call will be
+in the fact of contract violation. Put another way, they decline to define the behaviour.
+
+Secondly, the provider is under no obligation
+to have tested the behaviour outside of contract.
+So any and all assurances gathered through automated testing
+do not apply to out-of-contract use.
+And in the absence of testing, it's easy to miss a failure case, e.g.:
+
+```c++
+// signed integer overflow resulting in ISO C++ Standard UB
+number_to_letter(0x7fffffff);
+```
+
+Finally, the provider reserves the right to change the implementation as they choose.
+Assumptions drawn from the original definition are already false.
+But they become yet more dangerous if applied to a new definition, for example:
+
+```c++
+constexpr auto number_to_letter(int number)
+{
+  constexpr auto lookup_table = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  return lookup_table[number - min_number];
+}
+```
+
+It is easy to become distracted by the wonders of modern compilers.
+They are able to generate highly optimised code, by assuming contract fulfilment.
+But at the end of the day, they are not magic and nor is undefined behaviour.
+UB is just a way for authors to limit contracts so that providers can deliver more.
 
 ### Libraries Versus Programs
 
@@ -690,3 +728,7 @@ This is increasingly true in C++ where harmful misuse of the type system confuse
 * Sometimes, a bug in a program isn't a bug, it's an error.
 * UB is all around.
 *
+
+## Notes
+
+(*) With the occasional exception of English grammar.
