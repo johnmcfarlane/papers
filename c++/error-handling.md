@@ -554,7 +554,7 @@ So returning errors gets in the way of readability.
 
 To one degree or another, types such as `expected`, `outcome` and `optional` are
 capable of packing together both the desired result and the successfulness.
-They offer determinism and 
+They offer determinism and fast failure in the non-happy path.
 
 ### Exceptions
 
