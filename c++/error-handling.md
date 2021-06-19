@@ -577,7 +577,13 @@ auto main(int argc, char* argv[]) -> int
 
 The End User provider is charged with enforcement of the End User Contract,
 e.g. by emitting diagnostics and returning non-zero status codes.
-There are several approaches that can be taken.
+
+Several approaches that can be taken are details below.
+
+Note: choices these are tempered by the distinction between libraries and programs.
+The author of a program can choose a strategy as they see fit.
+But the author of a library must anticipate what choices their user might make.
+This is a problem for C++ error-handling at large.
 
 ### Return Values
 
@@ -888,7 +894,6 @@ They are able to generate highly optimised code, by assuming contract fulfilment
 But at the end of the day, they are not magic and nor is undefined behaviour.
 UB is just a way for authors to limit contracts so that providers can deliver more.
 
-### Libraries Versus Programs
 
 ### Sanitizer Before You Optimise
 
