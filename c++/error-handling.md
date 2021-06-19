@@ -35,17 +35,16 @@ makes clear the distinction between errors and bugs.
 Applying this distinction to the contracts below:
 
 * A _bug_ is the violation of a C++ API Contract or the ISO C++ Standard.
-* An _error_ is the violation of an End User Contract.
-* (A third category, _abstract machine corruption_ is identified, which includes
-  heap exhaustion and stack overflow. But it is not of interest as it does not relate
-  to any contract involving C++ program developers.)
+* An _error_, is when an interface couldn’t do what it advertised.
+
+Note: a third category, _abstract machine corruption_ is identified by P0709R4,
+and includes heap exhaustion and stack overflow.
+But it does not relate to contracts involving C++ program developers.)
 
 There is one time when the bug versus error distinction breaks down.
 That is when considering the Test User Contract.
 When testing for contract violations,
 the user wishes for bugs to behave far more like errors.
-(I believe that this fact is important to understanding
-why so much disagreement surrounds the C++ Contracts feature.)
 
 ## About Contracts
 
