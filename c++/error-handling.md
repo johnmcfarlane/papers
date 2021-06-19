@@ -675,6 +675,133 @@ There is heightened risk of compromise, corruption or critical failure if the
 program is ever invoked outside the parameters of the End User Contract.
 Even when it is possible, it is rarely worthwhile taking this risk.
 
+## C++ API Author Strategies
+
+### The Pit Of The False Sense of Success
+
+When the advertised goal of a C++ API cannot be achieved,
+it should be difficult for the user of the API to overlook the disappointment.
+
+Example 1:
+
+```c++
+auto load_file(string filename)
+{
+  ifstream file{filename};
+  if (!file) {
+    // bad! missing should not be the same empty
+    return vector<byte>{};
+  }
+  ...
+}
+```
+
+Example 2:
+
+```c++
+auto pull_away(color traffic_light)
+{
+  switch (traffic_light) {
+    case color::red:
+      return false;
+    case color::amber:
+      return false;
+    case color::green:
+      return true;
+    default:
+      // bad! suppresses compiler warnings; silences sanitizers;
+      // illogical: do we wait on a blue traffic light??
+      return false;
+  }
+}
+```
+
+These two functions return incorrect results, which is bad enough.
+But by returning anything at all,
+the error is allowed to propagate further into the program.
+By the time the value is observed to be incorrect,
+control may have passed to a distant part of the program
+where the cause of -- and fix to -- the problem are lost from view.
+
+> A trusted friend will tell you when you have spinach in your teeth.
+
+There are two main solutions to this kind of anti-pattern.
+
+### Disappointment By Type
+
+The best documentation is the API itself, starting with good naming.
+In a strongly-typed language, the types of a declaration are a powerful form of communication.
+
+Example 1 revisited:
+
+```c++
+auto load_file(string filename) -> optional<vector<byte>>
+{
+  ifstream file{filename};
+  if (!file) {
+    // better; user is made aware that the result isn't always some bytes
+    return nullopt;
+  }
+  ...
+}
+```
+
+### Disappointment By Contract
+
+Example 1 showed disappointment that could reasonably happen in a bug-free program.
+But when the C++ API Contract user could reasonably avoid the disappointment,
+it is far better to clearly put the responsibility onto the user:
+
+* Make it clear that it's a bug for the API to be used disappointingly.
+* Fulfil the obligations of a Test User Contract provider and help the user discover
+  the bug.
+
+Example 2 revisited:
+
+```c++
+/// @pre traffic_light must be red, amber or green
+auto pull_away(color traffic_light)
+{
+  switch (traffic_light) {
+    case color::red:
+      return false;
+    case color::amber:
+      return false;
+    case color::green:
+      return true;
+  }
+  // better; program will trap if user passes (color)3;
+  // it's clear from the code that fallthrough is a bug
+  assert(false);
+}
+```
+
+Note that the provider might be tempted to add a `default` clause to the switch statement.
+This is not advised. There is no acceptable default behaviour here
+so it's better not to express the intent that there is.
+
+Example 2 (Slight Return):
+
+```c++
+/// @pre traffic_light must be red, amber or green
+auto pull_away(color traffic_light)
+{
+  switch (traffic_light) {
+    case color::red:
+      return false;
+    case color::amber:
+      return false;
+    case color::green:
+      return true;
+    default:
+      // worse; there is no fourth alternative so why imply that there is?
+      // What if someone adds enumerator, color::blue?
+      // The compiler would not complain that there is no "case color::blue" 
+      assert(false);
+  }
+}
+```
+
 ## Discussion
 
 ### Provider Contract Violation
