@@ -809,25 +809,6 @@ auto pull_away(color traffic_light)
 
 ## Discussion
 
-### Provider Contract Violation
-
-We can now return to the question of _provider contract violation_.
-
-The first thing to observe is the distinction between
-
-* preconditions: assertions expressing a user's contractual obligations; typically
-  found on entry to the phase of a program where the contract applies, and
-* postconditions: assertions expressing a provider's contractual obligations;
-  typically found on exit from the phase of a program where the contract applies.
-
-### Choices for Contract Users
-
-There should be as few as possible. The user is the greatest point of failure.
-Where possible, they should not be distracted by the dilemmas of API design.
-Whether API users, End users or any other kind of user, their life should be made
-as easy as possible. This does not mean defensive APIs which hide their mistakes.
-Their mistakes should be made obvious to them as quickly and clearly as possible.
-
 ### API Contract Violation is Undefined Behaviour
 
 It is a common misconception that the term _undefined behaviour_
