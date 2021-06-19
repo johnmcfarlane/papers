@@ -899,12 +899,17 @@ less defective software without the necessity to compromise on safety or perform
 
 ## Conclusion
 
+In short:
+
 * You can choose bug handling strategy easily, change your mind or use different
-  strategies in different builds. 
+  strategies in different builds.
 * But you cannot so easily change error-handling strategies.
-* Sometimes, a bug in a program isn't a bug, it's an error.
-* UB is all around.
-*
+* Sometimes, a bug in a program isn't a bug, it's an error. This happens as part
+  of the Test User Contract and it's important to understand the special properties
+  of this contract.
+* UB is not something that is confined to the ISO C++ Standard.
+* UB is essential for optimising and finding bugs. You should never do one without
+  the other: don't optimize until you sanitize!
 
 ## Acknowledgements
 
