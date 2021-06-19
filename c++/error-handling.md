@@ -875,8 +875,27 @@ They are able to generate highly optimised code, by assuming contract fulfilment
 But at the end of the day, they are not magic and nor is undefined behaviour.
 UB is just a way for authors to limit contracts so that providers can deliver more.
 
+### Don't Optimize Until You Sanitize
 
-### Sanitizer Before You Optimise
+C++ toolchains increasingly optimise programs assuming that they are correct.
+Optimisations are not free. They demand strict contract observance.
+Historically, UB has been difficult to detect.
+
+Fortunately, toolchains now also provide facilities for detecting some UB.
+These are include dynamic analysis tools known as sanitizers
+which instrument code to test for bugs.
+The beauty of undefined behaviour is that it allows this -- and every other valid
+bug-hunting tool -- to be used in conforming code.
+
+Meanwhile, modern software development practices emphasise automated testing regimes.
+It is not uncomment for most of the APIs in a program
+to be tested for provider C++ API Contract violation frequently during development.
+Therefore, there is strong reason to use sanitizers as a matter of good practice.
+
+If you wish to enable compiler optimisations in the program you provide to users
+you are strongly advised to test your program code with sanitizers.
+Combined with the approaches detained in this document, this will lead to significantly
+less defective software without the necessity to compromise on safety or performance.
 
 ## Conclusion
 
