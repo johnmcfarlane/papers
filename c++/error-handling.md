@@ -901,10 +901,6 @@ UB is just a way for authors to limit contracts so that providers can deliver mo
 * UB is all around.
 *
 
-## Notes
-
-(*) With the occasional exception of English grammar.
-
 ## Acknowledgements
 
 Thanks to Alicja Przybyś and Andrzej Krzemieński for much feedback, correction
