@@ -163,7 +163,7 @@ are not a violation of the Test User Contract.
 
 Examples of contract trapping techniques that are commonly employed are
 
-* API contract expressions (e.g. asserts, pre-conditions and post-conditions),
+* API contract expressions (e.g. assertions, pre-conditions and post-conditions),
 * API contract tests (e.g. unit tests), and
 * ISO C++ Standard contracts (e.g. by enabling sanitizers
   and flags such as `_GLIBCXX_DEBUG` and `_ITERATOR_DEBUG_LEVEL`).
@@ -252,21 +252,64 @@ void f()
 * agreement: documentation, C++ Contracts (TBD)
 * provider: C++ API implementer; often the program developer(s)
 * user: program developer(s)
-* _enforcement_: assertions, e.g. [`assert`](https://en.cppreference.com/w/cpp/error/assert)
-* violation by user: undefined behaviour (see discussion)
+* violation by user: undefined behaviour
 
-## Strategies For Handling Dynamically-Enforceable Contracts
+### Dynamically-Enforceable Contract
 
-Dynamically-Enforceable API Contracts and the ISO C++ Standard
-form a group of contracts whose violation represents run-time bugs.
-Of these, a subset can be expressed formally within the program
-using assertions (including API preconditions and postconditions).
+This category is the constituency of violations from
 
-These expressions can be evaluated at run-time but typically incur a cost
-which violates the zero-overhead principle in the case of a bug-free program.
+* ISO C++ Standard, and
+* Dynamically-Enforceable API Contracts
+
+that can be identified programmatically and unambiguously at run-time.
+
+* agreement: constituent contract agreements
+* provider: constituent contract providers
+* user: program developer(s)
+* violation by user: undefined behaviour; trappable
+
+Examples of violations include
+
+* behaviour not defined by the ISO C++ Standard such as
+  * integer divide-by-zero,
+  * out-of-bounds array lookup,
+  * out-of-lifetime object access,
+  * calling `std::vector::front()` on an empty object,
+  * calling `upper_bound` on an unsorted sequence, and
+  * passing iterators to separate sequences to `std::for_each`, and
+* C++ API Contract violations for which a test could be expressed in-code.
+
+The cost involved in testing for these violations varies.
+But in theory, all of them can be automatically tested for
+without changing the behaviour of the program or violating other contracts,
+aside from the time and space taken to execute.
+
+Further, a subset of them can be identified through static analysis,
+
+```c++
+int main()
+{
+  return 1/0;
+}
+```
+
+and in a constant expressions, they become compiler errors:
+
+```c++
+constexpr auto a{1/0};
+```
+
+## Dynamically-Enforceable Contract Strategies
+
+As of C++20, Dynamically-Enforceable ISO C++ Standard violations require
+system or toolchain support to identify. For example,
+null pointer dereferences may be trapped by systems with virtual memory, and
+out-of-bounds array lookup may be trapped by dynamic analysis tools.
+
+Dynamically-Enforceable C++ API Contract violations must be called out using assertions.
 
 Broadly, there are three possible strategies that can be adopted
-at the point where an assertion would evaluate to `false`:
+at the point where an assertion would evaluate to `false`.
 
 ### Log-And-Continue Enforcement Strategy
 
