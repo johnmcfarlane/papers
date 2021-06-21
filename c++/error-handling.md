@@ -253,9 +253,9 @@ void f()
 * user: program developer(s)
 * violation by user: undefined behaviour
 
-### Dynamically-Enforceable Contract
+### Unambiguous Bugs
 
-This category is the constituency of violations from
+This contractual category is the constituency of violations from
 
 * ISO C++ Standard, and
 * Dynamically-Enforceable API Contracts
@@ -298,7 +298,7 @@ and in a constant expressions, they become compiler errors:
 constexpr auto a{1/0};
 ```
 
-## Dynamically-Enforceable Contract Strategies
+## Unambiguous Bug Strategies
 
 As of C++20, Dynamically-Enforceable ISO C++ Standard violations require
 system or toolchain support to identify. For example,
@@ -351,7 +351,7 @@ practices described as part of the Test User Contract which should help identify
 such bugs early on.
 
 ***I strongly encourages the use of assumptions in the implementation of
-assertions in order to unify the set of Dynamically-Enforceable Contracts and to
+assertions in order to unify the set of Unambiguous Bugs and to
 simplify the implementation of the Test User Contract.***
 In practice, this entails marking violated assertions as unreachable
 
@@ -368,8 +368,7 @@ and that constant expressions containing bugs become ill-formed.
 
 ## Enforcement Profiles
 
-The domain of the program greatly affects preferred enforcement strategy
-for Handling Dynamically-Enforceable Contracts.
+The domain of the program greatly affects preferred Unambiguous Bug Strategies.
 
 ### Tester
 
@@ -662,8 +661,8 @@ illustrate the recommended approach.
 
 ### Assertion Logic
 
-Here is an example assert function which illustrates the above Strategies For Handling
-Dynamically-Enforceable Contracts. It is compatible with some modern tool-chains.
+Here is an example assert function which illustrates the above Unambiguous Bug Strategies.
+It is compatible with some modern tool-chains.
 
 ```c++
 constexpr void eg_assert(bool condition)
@@ -707,8 +706,8 @@ be expressed directly in the code using predicates of the kind passed into `eg_a
 
 ### Calling a C++ API
 
-APIs within a program should never try to deal with Dynamically-Enforceable Contract
-violations resulting from incorrect invocation by users of the API.
+APIs within a program should never try to deal with Unambiguous Bugs
+resulting from incorrect invocation by users of the API.
 The set of possible violations is often significant and can quickly clutter the implementation.
 
 ```c++
@@ -724,7 +723,7 @@ void sanitized_run(int number)
 Code which digests input into the program is a very different matter.
 
 The program's developer(s) cannot assume that its input is error-free.
-In order to be confident that no Dynamically-Enforceable Contracts are violated,
+In order to be confident that no Unambiguous Bugs can occur,
 input must first be sanitized.
 
 In this example, the command line parameter is converted to an `int`.
