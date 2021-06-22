@@ -46,13 +46,15 @@ That is when considering the Test User Contract.
 When testing for contract violations,
 the user wishes for bugs to behave far more like errors.
 
-## About Contracts
+## Contracts
+
+### Contract Parameters
 
 For our purposes, a contract is an _agreement_ between a _user_, and
 a _provider_ about the run-time behaviour of some or all of a program.
 _User contract violation_ of a contract is what typically leads to disappointment.
 
-### Salient Parameters of a Contract
+#### Salient Contract Parameters
 
 The following set of parameters -- expressed as questions -- are helpful in
 understanding the correct error-handling strategy for a contract.
@@ -62,7 +64,7 @@ understanding the correct error-handling strategy for a contract.
 * Who is the user of the contract?
 * What are the consequences of user contract violation?
 
-### What About Provider Contract Violation?
+#### What About Provider Contract Violation?
 
 Both the user and the provider have contractual obligations.
 However, ***this document concentrates on user contract violation***.
@@ -83,17 +85,17 @@ tools.
 It is also important to note that providing timely corrective feedback to the _user_
 is an effective way to help them learn their craft with less supervision.
 
-### What About Contract Author?
+#### What About Contract Author?
 
 Authors are often also providers, sometimes users and occasionally neither.
 The quality of their contracts affects the chances of avoid violations.
 Beyond this, they are mentioned very little.
 
-## What Contracts Are There?
+### Types of Contracts
 
 In a C++ program, some contracts that matter are as follows.
 
-### End User Contract
+#### End User Contract
 
 The ultimate contract that a program must fulfil is to its end user.
 All other contracts below are in support of this fulfilment.
@@ -121,7 +123,7 @@ For programs with exposure to malicious agents, this is critical.
 For safety-critical applications, this is important.
 To identify flaws in input sanitization use fuzz testing.
 
-### Test User Contract
+#### Test User Contract
 
 During development, the program -- or portions of it --
 may be built for testing purposes.
@@ -167,7 +169,7 @@ Examples of contract trapping techniques that are commonly employed are
 * ISO C++ Standard contracts (e.g. by enabling sanitizers
   and flags such as `_GLIBCXX_DEBUG` and `_ITERATOR_DEBUG_LEVEL`).
 
-### ISO C++ Standard
+#### ISO C++ Standard
 
 A typical language specification for a C++ program is a revision of
 [the ISO C++ Standard](https://isocpp.org/std/the-standard).
@@ -182,7 +184,7 @@ A typical language specification for a C++ program is a revision of
 Note: while this document focuses on run-time disappointment, developers are encouraged
 to use static typing to surface defects earlier in the development process.
 
-### Toolchain Contract
+#### Toolchain Contract
 
 * agreement: toolchain documentation, including portions of the Language
   Specification identified as
@@ -193,7 +195,7 @@ to use static typing to surface defects earlier in the development process.
 
 Note: being a collection of programs, the toolchain has its own End User Contracts.
 
-### C++ API Contract
+#### C++ API Contract
 
 Contracts play an essential role in good API design.
 Most C++ APIs center around functions:
@@ -232,9 +234,16 @@ auto square(double x)
 
 Are outside the scope of this document.
 
-#### Dynamically-Enforceable API Contracts
+### Types of Contract Violation
 
-The provider should communicate correct API usage to the user.
+From the above contracts, we can identify several important patterns based
+details about how those contracts are broken. They are often more important to the
+program developer than where the contract is documented or who is disappointing who.
+
+#### Dynamically-Enforceable C++ API Contracts
+
+This is the subset of C++ API Contracts which it is impossible to test at compile
+time, but which it is possible to test at run-time.
 
 Example violation:
 
@@ -253,12 +262,12 @@ void f()
 * user: program developer(s)
 * violation by user: undefined behaviour
 
-### Unambiguous Bugs
+#### Unambiguous Bugs
 
 This contractual category is the constituency of violations from
 
 * ISO C++ Standard, and
-* Dynamically-Enforceable API Contracts
+* Dynamically-Enforceable C++ API Contracts
 
 that can be identified programmatically and unambiguously at run-time.
 
@@ -298,7 +307,9 @@ and in a constant expressions, they become compiler errors:
 constexpr auto a{1/0};
 ```
 
-## Unambiguous Bug Strategies
+## Unambiguous Bugs in Detail
+
+### Unambiguous Bug Strategies
 
 As of C++20, Dynamically-Enforceable ISO C++ Standard violations require
 system or toolchain support to identify. For example,
@@ -310,7 +321,7 @@ Dynamically-Enforceable C++ API Contract violations must be called out using ass
 Broadly, there are three possible strategies that can be adopted
 at the point where an assertion would evaluate to `false`.
 
-### Log-And-Continue Enforcement Strategy
+#### Log-And-Continue Enforcement Strategy
 
 The assert statement could emit a run-time diagnostic regarding the contract violation
 and then continue past the assertion. This is not ideal: the program is known to
@@ -328,7 +339,7 @@ terminating the program is greater than the risks of undefined behaviour, then
 a programmer might choose this path. It would be sensible to do everything possible
 to mitigate the effects, e.g. by disabling optimisations.
 
-### Trap Enforcement Strategy
+#### Trap Enforcement Strategy
 
 The assert statement can halt the program.
 
@@ -336,7 +347,7 @@ This has the disadvantage that the program completely fails to perform its task.
 But the advantage is that no further incorrect behaviour
 will be exhibited by the program.
 
-### Prevention Enforcement Strategy
+#### Prevention Enforcement Strategy
 
 Assuming bugs are eliminated, no assert expression will ever be false.
 This means that assert statements behave as if they are not there.
@@ -366,11 +377,11 @@ This strategy provides the maximum leeway to support enforcement profiles (below
 and ensures that the existing ability of sanitizers is extended,
 and that constant expressions containing bugs become ill-formed.
 
-## Enforcement Profiles
+### Enforcement Profiles
 
 The domain of the program greatly affects preferred Unambiguous Bug Strategies.
 
-### Tester
+#### Tester
 
 Somebody who is testing the program, e.g.
 
@@ -381,19 +392,19 @@ Somebody who is testing the program, e.g.
 will all prefer Trap Enforcement Strategy because bugs are a likelihood
 and performance and stability are secondary concerns.
 
-### Safety-Critical System With Redundancy
+#### Safety-Critical System With Redundancy
 
 A safety-critical system *with* backup/redundancy will also prefer Trap Enforcement
 Strategy because knowingly allowing the program to continue in an incorrect state
 is an unacceptable risk.
 A life-support system or the autopilot in an autonomous vehicle provide good examples.
 
-### Safety-Critical System Without Redundancy
+#### Safety-Critical System Without Redundancy
 
 A safety-critical system *without* backup/redundancy
 may prefer Log-And-Continue Enforcement Strategy.
 
-### Performance-Critical/Resource-Constrained
+#### Performance-Critical/Resource-Constrained
 
 Applications which are performance-critical or resource-constrained
 may favour Prevention Enforcement Strategy.
@@ -403,7 +414,7 @@ Much confidence can be attained through the Test User Contract.
 
 Examples applications include multimedia software entertainment and embedded controllers.
 
-### Business-Critical Systems
+#### Business-Critical Systems
 
 Where business interests are at stake but lives are not,
 either the Trap Enforcement Strategy or Log-And-Continue Enforcement Strategy
