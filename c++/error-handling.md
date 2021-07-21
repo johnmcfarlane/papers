@@ -1,23 +1,21 @@
 # Contractual Disappointment in C++
 
-This document provides guidance on how to write robust C++ programs.
+> "Oh who can say how subtle and safe one feels" (John Betjeman, False Security)
 
-For much of the document, I explore the factors related to how error-handling choices
-are made:
+This document offers advice on writing robust programs in C++.
+It draws on personal experience in domains including interactive entertainment,
+large-scale server systems and safety-critical devices.
 
-* What are the types of problem that a running program might encounter?
-* What contracts are in play?
-* Of these contracts, which ones relate to bugs?
-* What are the strategies for reacting to bugs in a running program?
-* Who writes programs and what strategies might they prefer?
-
-Then the different elements are brought together in a simple program which
-illustrates how errors and bugs are treated very differently and how this
-isn't affected by bug-handling strategies.
+Contracts and their consequences are the main tool used to frame run-time failure.
+Through the lens of contracts I attempt to show that -- while the correctness of
+C++ programs is a necessity, rather than a luxury -- carefully understood
+contracts are the most effective way to ensure usability, efficiency *and* reliability.
 
 ## Introduction
 
-[Handling Disappointment in C++](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0157r0.html)
+### Disappointment
+
+[P0157R0, Handling Disappointment in C++](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0157r0.html),
 observes that run-time errors are just one kind of disappointment
 that [a C++ program](https://eel.is/c++draft/basic.link#def:program) might elicit.
 I argue that all disappointment involves the violation of a contract
@@ -26,70 +24,57 @@ and that the correct strategy for handling a violation depends on two things:
 1. the parameters of the contract, and
 1. the usage profile of the program.
 
-## Bugs and Errors
+### Bugs and Errors
 
 Section 4.2 of [P0709R4, Zero-overhead Deterministic Exceptions: Throwing values](https://wg21.link/p0709r4),
 "Proposed cleanup: Don’t report logic errors using exceptions",
 makes clear the distinction between errors and bugs.
 
-Applying this distinction to the contracts below:
+Applying this distinction to the contracts introduced in the following section:
 
 * A _bug_ is the violation of a C++ API Contract or the ISO C++ Standard.
 * An _error_, is when an interface couldn’t do what it advertised.
 
 Note: a third category, _abstract machine corruption_ is identified by P0709R4,
-and includes heap exhaustion and stack overflow.
-But it does not relate to contracts involving C++ program developers.)
+which includes heap exhaustion and stack overflow.
+But it does not relate to contracts involving C++ program developers.
 
 There is one time when the bug versus error distinction breaks down.
 That is when considering the Test User Contract.
 When testing for contract violations,
-the user wishes for bugs to behave far more like errors.
+the user wishes for bugs to behave like errors.
 
 ## Contracts
 
-### Contract Parameters
+### Contract Attributes
 
 For our purposes, a contract is an _agreement_ between a _user_, and
 a _provider_ about the run-time behaviour of some or all of a program.
 _User contract violation_ of a contract is what typically leads to disappointment.
 
-#### Salient Contract Parameters
+Those four attributes: agreement; user; provider; and user contract violation,
+are the salient attributes. But there are others.
 
-The following set of parameters -- expressed as questions -- are helpful in
-understanding the correct error-handling strategy for a contract.
-
-* Where, and in what form, is the agreement expressed?
-* Who is the provider of the contract?
-* Who is the user of the contract?
-* What are the consequences of user contract violation?
-
-#### What About Provider Contract Violation?
+#### Provider Contract Violation
 
 Both the user and the provider have contractual obligations.
-However, ***this document concentrates on user contract violation***.
+However, this document concentrates on user contract violation.
 
 Why?
+
 Firstly, it's simpler to focus on one side of the contract and apply the findings
 to the other side later on.
 Secondly, the user is typically the less experienced and more error-prone of
-the two parties. Therefore, violation by user is more common. It seems highly likely
-that more software defects are caused by the user, rather than the provider
-of a contract.
+the two parties. Therefore, violation by the user is more common.
 
-Nowhere is this clearer than in the case of the Toolchain Contract (below)
-where the toolchain provider is far less likely to be the cause of a contract
+For example, in the case of the Toolchain Contract (below),
+the toolchain provider is far less likely to be the cause of a contract
 violation by virtue of the significant rigour, effort and feedback poured into such
 tools.
 
-It is also important to note that providing timely corrective feedback to the _user_
-is an effective way to help them learn their craft with less supervision.
-
-#### What About Contract Author?
+#### Contract Author
 
 Authors are often also providers, sometimes users and occasionally neither.
-The quality of their contracts affects the chances of avoid violations.
-Beyond this, they are mentioned very little.
 
 ### Types of Contracts
 
@@ -97,62 +82,64 @@ In a C++ program, some contracts that matter are as follows.
 
 #### End User Contract
 
-The ultimate contract that a program must fulfil is to its end user.
-All other contracts below are in support of this fulfilment.
+The overarching contract that a program must fulfil is to its end user.
+All following contracts exist in support of this fulfilment.
 
 * agreement: program documentation, possibly including a `--help` option
   or a 'man' page
-* provider: the program developer(s)
+* provider: the program developer
 * user: the program user
-* violation by user: user input is sanitized and ill-formed input is handled
-  early through normal control flow (including exception handling)
+* violation by user: input is sanitized and erroneous input is handled
+  early through normal program control flow
 
-User input might include command-line parameters, UI interaction, data files.
-Input identified as ill-formed must be rejected early by the program.
+Input might include command-line parameters, UI interaction and data files.
+Input identified as erroneous must be rejected early by the program.
 
 Where possible, rejection should be accompanied by meaningful feedback
-which helps the user correct the input so as to increase the chance of future success.
+which helps the user correct the input and increase the chance of subsequent success.
 For example, on a typical terminal-based system,
 meaningful feedback might take the form of a diagnostic emitted on the error stream,
 followed by exit with non-zero status.
 
 Input that is not rejected must be incapable of causing violations
 of any contracts mentioned below.
-In particular, contract violations could result in security vulnerabilities.
-For programs with exposure to malicious agents, this is critical.
-For safety-critical applications, this is important.
-To identify flaws in input sanitization use fuzz testing.
+Contract violations could result in security vulnerabilities
+or unsafe program behaviour in safety-critical applications.
+Fuzzers can help to test whether the program fails to reject erroneous input.
 
 #### Test User Contract
 
 During development, the program -- or portions of it --
 may be built for testing purposes.
 
-The program should be instrumented to test for violations of the below contracts.
+The program should be instrumented to test for violations of the Dynamically-Enforceable
+C++ API Contracts (below).
+The program may be intended to test the End User Contract,
+as is the case for unit tests.
 As many violations as is practical should be checked.
 Trapped contract violations should be treated like user errors
 as described in the End User Contract above,
 i.e. terminate with helpful diagnostic and non-zero status.
 
-***Important:*** this fundamentally changes the status of some violations from bugs
-to errors.
+***Important:*** this changes the status of violations described elsewhere
+from bugs to errors.
 It is important to understand that what may be considered a bug outside of testing
-(e.g. signed integer overflow or passing an unsorted sequence to `lower_bound`)
-is instead considered an error and treated differently.
-Bugs written by the program developer(s) which surface during testing
-are not a violation of the Test User Contract.
+(e.g. signed integer overflow or performing binary search on an unsorted sequence)
+is here instead an error.
+Bugs written by the program developer which are trapped during testing
+are *not* a violation of the Test User Contract.
 
-* agreement: varied, but may be enshrined in a project README, a wiki or project
-  process document(s)
+* agreement: documentation of dynamic analysis tools and/or sanitizers
 * provider:
   * analysis tool providers whose tools flag violations -- especially of the
     ISO C++ Standard and Toolchain Contract, or
   * C++ API Contract providers who are encouraged to assert that their APIs are used
     correctly.
-* user: a test engineer who may be
-  * a program developer testing their work,
+* user: an engineer who may be
+  * a program developer testing the End User Contract with unit tests,
+    or to test other parts of the C++ API Contract,
   * a test engineer testing the program for correct operation, or
-  * a dev-ops engineer testing the program as part of a CI pipeline
+  * a dev-ops engineer testing either of the above as part of a CI pipeline
 * violation by user:
   * If the analysis tool advertises that it will trap a particular
     contract violation and fails to do so, that is a violation of this contract
@@ -177,31 +164,35 @@ A typical language specification for a C++ program is a revision of
 * agreement: a recognised set of standing documents including a C++ standard
   such as International Standard ISO/IEC 14882:2020(E), technical specifications,
   etc..
-* provider: implementer of the toolchain used to build the program
-* user: the program developer(s)
-* violation by user: undefined behaviour
+* provider: implementer of the toolchain used by the program developer
+* user: the program developer
+* violation by user: undefined behaviour; trappable
 
 Note: while this document focuses on run-time disappointment, developers are encouraged
-to use static typing to surface defects earlier in the development process.
+to use preventative practices such as static typing
+in order to surface defects earlier in the development process.
 
 #### Toolchain Contract
 
-* agreement: toolchain documentation, including portions of the Language
+* agreement: toolchain documentation including portions of the Language
   Specification identified as
   [implementation-defined behavior](https://eel.is/c++draft/defns.impl.defined)
 * provider: implementer of the toolchain used to build the program
-* user: the program developer(s)
+* user: the program developer
 * violation by user: implementation-specific(?)
 
-Note: being a collection of programs, the toolchain has its own End User Contracts.
+Note: being comprised of one or more programs,
+the toolchain has its own End User Contract.
 
 #### C++ API Contract
 
-Contracts play an essential role in good API design.
-Most C++ APIs center around functions:
-expectations around their invocation,
-details of the types required by those invocations, and
-their supporting definitions and declarations.
+Note: For most intents and purposes, the library incorporated into
+the ISO C++ Standard can be considered to be a collection of C++ APIs.
+
+* agreement: documentation (ideally self-documentation)
+* provider: C++ API implementer (often also the program developer)
+* user: program developer
+* violation by user: various
 
 It is helpful to subcategorise API contracts in descending order of desirability:
 
@@ -232,11 +223,14 @@ auto square(double x)
 }
 ```
 
-Are outside the scope of this document.
+are outside the scope of this document.
+The former is left to the compiler to enforce.
+The latter can only be deal with by developers.
+All things being equal, good APIs favours the former and avoid the latter.
 
 ### Types of Contract Violation
 
-From the above contracts, we can identify several important patterns based
+From the above contracts, we can identify several important patterns based on
 details about how those contracts are broken. They are often more important to the
 program developer than where the contract is documented or who is disappointing who.
 
@@ -245,22 +239,10 @@ program developer than where the contract is documented or who is disappointing 
 This is the subset of C++ API Contracts which it is impossible to test at compile
 time, but which it is possible to test at run-time.
 
-Example violation:
-
-```c++
-// precondition: a is non-negative
-double sqrt(double a);
-
-void f()
-{
-  sqrt(-1);
-}
-```
-
-* agreement: documentation, C++ Contracts (TBD)
-* provider: C++ API implementer; often the program developer(s)
-* user: program developer(s)
-* violation by user: undefined behaviour
+* agreement: documentation (ideally self-documentation)
+* provider: C++ API implementer (often also the program developer)
+* user: program developer
+* violation by user: undefined behaviour; trappable
 
 #### Unambiguous Bugs
 
@@ -273,24 +255,24 @@ that can be identified programmatically and unambiguously at run-time.
 
 * agreement: constituent contract agreements
 * provider: constituent contract providers
-* user: program developer(s)
+* user: program developer
 * violation by user: undefined behaviour; trappable
 
 Examples of violations include
 
-* behaviour not defined by the ISO C++ Standard such as
+* behaviour not defined by the ISO C++ Standard, e.g.
   * integer divide-by-zero,
   * out-of-bounds array lookup,
   * out-of-lifetime object access,
   * calling `std::vector::front()` on an empty object,
   * calling `upper_bound` on an unsorted sequence, and
-  * passing iterators to separate sequences to `std::for_each`, and
+  * passing iterators from separate sequences to `std::for_each`, and
 * C++ API Contract violations for which a test could be expressed in-code.
 
 The cost involved in testing for these violations varies.
 But in theory, all of them can be automatically tested for
-without changing the behaviour of the program or violating other contracts,
-aside from the time and space taken to execute.
+without changing the behaviour of the program or violating other contracts
+(aside from the time and space taken to execute).
 
 Further, a subset of them can be identified through static analysis,
 
@@ -316,28 +298,10 @@ system or toolchain support to identify. For example,
 null pointer dereferences may be trapped by systems with virtual memory, and
 out-of-bounds array lookup may be trapped by dynamic analysis tools.
 
-Dynamically-Enforceable C++ API Contract violations must be called out using assertions.
+Dynamically-Enforceable C++ API Contract violations must be trapped using assertions.
 
 Broadly, there are three possible strategies that can be adopted
 at the point where an assertion would evaluate to `false`.
-
-#### Log-And-Continue Enforcement Strategy
-
-The assert statement could emit a run-time diagnostic regarding the contract violation
-and then continue past the assertion. This is not ideal: the program is known to
-exhibit undefined behaviour at this point.
-
-There is a strong desire to distinguish between contract violations that
-exhibit UB and ones which are somehow safe. But this distinction is false.
-An assert expression needs to be something that is inconceivable. As such, its cause
-can only be explained by some unforeseen error earlier in the control flow.
-This in turn leaves the door open to UB caused by the error elsewhere.
-The horse has already bolted, so to speak.
-
-Nevertheless, under certain constraints this strategy is appealing. If the cost of
-terminating the program is greater than the risks of undefined behaviour, then
-a programmer might choose this path. It would be sensible to do everything possible
-to mitigate the effects, e.g. by disabling optimisations.
 
 #### Trap Enforcement Strategy
 
@@ -345,37 +309,59 @@ The assert statement can halt the program.
 
 This has the disadvantage that the program completely fails to perform its task.
 But the advantage is that no further incorrect behaviour
-will be exhibited by the program.
+will be exhibited by the program; the user is protected from unbounded risk.
+It is also of most help to the developer as they are strongly encouraged
+to confront the bug early.
+
+Because of these advantages, it makes a good default strategy.
+This is the default chosen by [the `assert` macro](https://en.cppreference.com/w/cpp/error/assert).
 
 #### Prevention Enforcement Strategy
 
-Assuming bugs are eliminated, no assert expression will ever be false.
+The program can assume that defects have been eliminated.
+Assuming bugs do not occur, no assert expression will ever be false.
 This means that assert statements behave as if they are not there.
-This in turn means that they can be empty or used as hints to the optimiser.
-
-There is concern ([P2064](https://wg21.link/p2064r0)) that assuming no violations
-is somehow incorrect. This is founded on the acceptance of bugs in production code
-and the assumption that optimisers *cause* undefined behaviour. They do not. Bugs
-cause undefined behaviour. If developers wish to release code with bugs to production,
-they are welcome to disable such assumptions. But they are invited, instead, to follow
-practices described as part of the Test User Contract which should help identify
-such bugs early on.
-
-***I strongly encourages the use of assumptions in the implementation of
-assertions in order to unify the set of Unambiguous Bugs and to
-simplify the implementation of the Test User Contract.***
-In practice, this entails marking violated assertions as unreachable
 
 ```c++
-#define ASSERT(cond) ((cond) ? static_cast<void>(0) : __builtin_unreachable())
+#define ASSERT(condition) ((void)0)
 ```
 
-which is semantically sound, given violations already must never occur in correctly-written
-C++ programs.
+This in turn means that they can be empty or used as hints to the optimiser.
 
-This strategy provides the maximum leeway to support enforcement profiles (below)
-and ensures that the existing ability of sanitizers is extended,
-and that constant expressions containing bugs become ill-formed.
+```c++
+#define ASSERT(condition) ((cond) ? static_cast<void>(0) : __builtin_unreachable())
+```
+
+Advantages:
+
+* Optimiser is given hints which are often necessary to fulfil
+  the zero-overhead principle.
+* Sanitizer seamlessly extends the range of bugs it is able to trap.
+* Nervous developers who are not certain they have yet eliminated defects
+  are advised to disable optimisations regardless of new hints.
+
+Disadvantages:
+
+* Developers who wish to optimise and release defective code will see
+  further deterioration in the behaviour of their program.
+
+Concerns about this deterioration are raised in ([P2064](https://wg21.link/p2064r0)).
+It indicates than an alarming amount of defective code reaches production
+without being run through a sanitizer.
+Such programs should not assume that asserts hold and should be released without
+optimisations enabled.
+
+#### Log-And-Continue Enforcement Strategy
+
+The program can emit a run-time diagnostic regarding the contract violation
+and then continue past the assertion. This is not ideal:
+
+* Code size may increase considerably.
+* It involves relying -- for logging purposes -- on a program which exhibits UB.
+
+Nevertheless, it is a popular choice in some domains
+where the cost of terminating a program is great
+and the risk of continuing with undefined behaviour is low.
 
 ### Enforcement Profiles
 
@@ -409,10 +395,8 @@ may prefer Log-And-Continue Enforcement Strategy.
 Applications which are performance-critical or resource-constrained
 may favour Prevention Enforcement Strategy.
 
-There must be a high degree of confidence in the correctness of their program.
-Much confidence can be attained through the Test User Contract.
-
-Examples applications include multimedia software entertainment and embedded controllers.
+Examples applications include interactive entertainment software, scientific simulations
+and embedded controllers.
 
 #### Business-Critical Systems
 
@@ -423,9 +407,8 @@ A RESTful server which persists between requests may eventually identify bad sta
 that has lain unnoticed for a while.
 The developer can choose what happens on discovery:
 
-* Do we kill the process and restart it in the hope that the problem goes away
-  for a while, or
-* do we 'soldier on' and hope the problem doesn't cause some catastrophe or other?
+* Kill the process and restart it in the hope that the problem goes away for a while.
+* 'Soldier on' and hope the problem doesn't cause some catastrophe or other.
 
 This choice will be affected by factors such as the scale of the fleet,
 exposure to malicious agents and the cost of incorrect behaviour.
@@ -435,45 +418,46 @@ exposure to malicious agents and the cost of incorrect behaviour.
 The End User provider is charged with enforcement of the End User Contract,
 e.g. by emitting diagnostics and returning non-zero status codes.
 
-Several approaches that can be taken are details below.
+Several approaches that can be taken are detailed below.
 
-Note: choices these are tempered by the distinction between libraries and programs.
+Note: these choices are tempered by the distinction between libraries and programs.
 The author of a program can choose a strategy as they see fit.
-But the author of a library must anticipate what choices their user might make.
-This is a problem for C++ error-handling at large.
+But the author of a library must anticipate what choices
+their library user might make.
+This is a general problem for C++.
 
 ### Return Values
 
-The Example Program (above) is simple enough that Boolean return values suffice as
+Some programs are simple enough that Boolean return values suffice as
 a method for sending news of failure back to the calling process.
 
-However, things get complicated quickly and several alternatives should be considered.
-Unfortunately, this choice cannot be changed easily once code is written.
+However, things get complicated quickly and unfortunately,
+this choice cannot be changed easily once code is written.
 
 ### Vocabulary Return Types
 
 One disadvantage of reporting the success of the function as the return value is
-that C++ functions only return one object.
-APIs are more readable if they return the expected results of a successful invocation.
+that C++ functions can only return one object.
+APIs are more readable if they return the results of a successful invocation.
 So returning errors gets in the way of readability.
 
-To one degree or another, types such as `expected`, `outcome` and `optional` are
+To some degree or another, types such as `expected`, `outcome` and `optional` are
 capable of packing together both the desired result and the successfulness.
-They offer determinism and fast failure in the non-happy path.
+They offer determinism and fast failure in the disappointing case.
 
 ### Exceptions
 
 Exceptions are well-suited to error handling. They keep the 'happy path' free of
 error propagation logic which should make them more efficient in the case that nothing
 goes wrong. Indeed, [they are often the most efficient solution](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1947r0.pdf)
-when where there is high confidence that throwing is rare.
+where there is high confidence that throwing is rare.
 
 Exceptions are also a flexible solution which allow error handling code to be localised
 within the call graph: imagine a program which needs to report defects differently
 in separate sections of the code. In one section, errors are logged to a file. In
 another section, errors are reported to a bug-tracking server. And in both sections,
 the program is not allowed to access any IO. Such constraints can be overcome trivially
-using just two `catch` blocks.
+with just a couple of `catch` blocks.
 
 However, such versatility is rarely necessary in real applications. And exceptions
 bring other costs.
@@ -483,7 +467,7 @@ bring other costs.
 * When thrown, they are costly in [time and determinism](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1886r0.html),
   which can break real-time system constraints, violating the End User Contract.
 * Even when not thrown, they can make it difficult to reason about control flow,
-  which has implications for both developers and optimisers.
+  which has implications for both developers and tools.
 
 ### Abnormal Program Termination
 
@@ -494,7 +478,7 @@ A simple error-handling function can be used much like the assert routine:
 ```c++
 // error handler function
 template <typename... args>
-[[noreturn]] void eg_fatal(args&&... parameters)
+[[noreturn]] void fatal(args&&... parameters)
 {
   fmt::print(stderr, std::forward<args>(parameters)...);
   fmt::print("Try --help\n");
@@ -506,16 +490,18 @@ Usage couldn't be much simpler:
 
 ```c++
   if (actual_num_params != expected_num_params) {
-    eg_fatal("Wrong number of arguments provided. Expected={}; Actual={}\n", actual_num_params, expected_num_params);
+    fatal("Wrong number of arguments provided. Expected={}; Actual={}\n", actual_num_params, expected_num_params);
   }
 ```
 
-This approach is often discouraged in C++ programs. The main reason is that it typically
-bypasses destructors. That's not such a worry if the program is already in a bad
+Abnormal program termination is often discouraged in C++ programs.
+The main reason is that it typically bypasses destructors.
+That's not such a worry if the program is already in a bad
 state, so terminating in reaction to contract violations is relatively palatable.
-And destructors in a modern, well designed system are only important to a running
-process: memory, file descriptors and peripherals should all be freed up by
-the system once the owning process is ended.
+And destructors in a modern, well designed system are only important
+while the process is running:
+memory, file descriptors and peripherals should all be freed up by the system
+once the owning process is ended.
 
 So with caveats, this can be the best approach for reacting to violations of the
 End User Contract -- as well as contracts which cause UB. In profile,
@@ -526,8 +512,8 @@ associated with bypassing destructors may not be significant.
 ### Push UB Onto The End User
 
 The program might be part of a larger system which is internal to a group of developers.
-For example, essential data might be stored in a read-only filesystem which is essential
-to the system. Loss of this filesystem might be unrecoverable. In such a circumstance,
+For example, essential data might be stored in a read-only filesystem.
+Loss of this filesystem might be unrecoverable. In such a circumstance,
 why not simply assume that the filesystem is there? Why not treat the End User Contract
 in the same way as a C++ API contract?
 
@@ -539,10 +525,10 @@ Even when it is possible, it is rarely worthwhile taking this risk.
 
 ## C++ API Author Strategies
 
-### The Pit Of The False Sense of Success
+### The Pit of False Security
 
 When the advertised goal of a C++ API cannot be achieved,
-it should be difficult for the user of the API to overlook the disappointment.
+it should be difficult for the user of the API to escape the disappointment.
 
 Example 1:
 
@@ -551,7 +537,7 @@ auto load_file(string filename)
 {
   ifstream file{filename};
   if (!file) {
-    // bad! missing should not be the same empty
+    // bad! missing is not the same as empty
     return vector<byte>{};
   }
   ...
@@ -578,14 +564,11 @@ auto pull_away(color traffic_light)
 }
 ```
 
-These two functions return incorrect results, which is bad enough.
-But by returning anything at all,
+These two functions return incorrect results. And by returning anything at all,
 the error is allowed to propagate further into the program.
 By the time the value is observed to be incorrect,
 control may have passed to a distant part of the program
-where the cause of -- and fix to -- the problem are lost from view.
-
-> A trusted friend will tell you when you have spinach in your teeth.
+where the cause of -- and fix for -- the problem are lost from view.
 
 There are two main solutions to this kind of anti-pattern.
 
@@ -612,7 +595,7 @@ auto load_file(string filename) -> optional<vector<byte>>
 
 Example 1 showed disappointment that could reasonably happen in a bug-free program.
 But when the C++ API Contract user could reasonably avoid the disappointment,
-it is far better to clearly put the responsibility onto the user:
+it is far better to clearly put the responsibility onto the caller:
 
 * Make it clear that it's a bug for the API to be used disappointingly.
 * Fulfil the obligations of a Test User Contract provider and help the user discover
@@ -633,7 +616,7 @@ auto pull_away(color traffic_light)
       return true;
   }
   // better; program will trap if user passes (color)3;
-  // it's clear from the code that fallthrough is a bug
+  // it's clear from the code that fall-through is a bug
   assert(false);
 }
 ```
@@ -657,8 +640,9 @@ auto pull_away(color traffic_light)
       return true;
     default:
       // worse; there is no fourth alternative so why imply that there is?
+
       // What if someone adds enumerator, color::blue?
-      // The compiler would not complain that there is no "case color::blue" 
+      // The compiler would not complain that there is no "case color::blue".
       assert(false);
   }
 }
@@ -668,7 +652,7 @@ auto pull_away(color traffic_light)
 
 The following excerpts from the program hosted
 [here](https://github.com/johnmcfarlane/eg-error-handling/blob/6bee393c245debf4ef921f8518b1b6a89a477b25/src/main.cpp),
-illustrate the recommended approach.
+illustrate the recommendations collected in this document.
 
 ### Assertion Logic
 
@@ -687,7 +671,12 @@ constexpr void eg_assert(bool condition)
 #elif defined(TRAP_STRATEGY)
   std::terminate();
 #elif defined(PREVENTION_STRATEGY)
-  __builtin_unreachable();
+  // Just-about anything can go here as it will never be reached.
+  // All Enforcement Profiles should assume this line isn't reached.
+  // Further, the Performance-Critical/Resource-Constrained profile
+  // may wish to hint to the compiler, e.g. with __builtin_unreachable().
+#else
+#error
 #endif
 }
 ```
@@ -710,16 +699,27 @@ constexpr auto number_to_letter(int number)
 }
 ```
 
-Calls to this API *must* observe the contract. In production code, this isn't
-open to negotiation. In a C++ program, the contract is typically documented
-in comments. Other language allow some of the preconditions and postconditions to
-be expressed directly in the code using predicates of the kind passed into `eg_assert`.
+Calls to this API *must* observe the contract.
+The contract is part of the interface of the API.
+Contracts need to be communicated to API users.
+Communication can be through documentation.
+
+The contract is composed of conditions.
+Some conditions can be formally expressed.
+Some such conditions can be expressed in the code itself.
+Some languages support format expression as part of the interface.
+Many languages support expression of conditions within the implementation.
+
+The `eg_assert` invocations above are examples of expressions within the implementation.
 
 ### Calling a C++ API
 
-APIs within a program should never try to deal with Unambiguous Bugs
-resulting from incorrect invocation by users of the API.
-The set of possible violations is often significant and can quickly clutter the implementation.
+In general, APIs should not attempt to handle out-of-contract usage.
+As with the `pull_away` example above, normalising bugs has many negative consequences.
+The set of possible violations is likely to be vast
+so logic to deal with it can dilute the 'intentional' code of a function.
+
+The contract of `sanitized_run`,
 
 ```c++
 /// @pre Requires sanitized data, i.e. number in the range 1<=number<=26.
@@ -729,13 +729,17 @@ void sanitized_run(int number)
 }
 ```
 
+with respect to `number` is no different to that of `number_to_letter`;
+they both require the same range of values.
+So even an assertion is of little value here.
+
 ### Sanitizing Input
 
 Code which digests input into the program is a very different matter.
 
 The program's developer(s) cannot assume that its input is error-free.
 In order to be confident that no Unambiguous Bugs can occur,
-input must first be sanitized.
+input must first be checked.
 
 In this example, the command line parameter is converted to an `int`.
 
@@ -748,7 +752,9 @@ auto unsanitized_run(std::span<char*> args)
   if (actual_num_params != expected_num_params) {
     // End User Contract violation; emit diagnostic and exit with non-zero exit code
     fmt::print(
-        stderr, "Wrong number of arguments provided. Expected={}; Actual={}\n", actual_num_params, expected_num_params);
+        stderr,
+        "Wrong number of arguments provided. Expected={}; Actual={}\n",
+        actual_num_params, expected_num_params);
     return false;
   }
 
@@ -788,9 +794,19 @@ auto unsanitized_run(std::span<char*> args)
 }
 ```
 
-In contrast with `sanitized_run`, `unsanitized_run` does a lot of validating of data.
+In contrast with `sanitized_run`, `unsanitized_run` does a lot of validating of data
+and little else.
+
+Like ingested poison, .
+This can be seen as analogous to digestion:
+External matter is ingested, harmful or unwanted matter is rejected,
+and if anything remains, it is accepted into the organism and processed.
+
+It may be difficult to determine until quite far in the process whether input is well-formed.
+
+It essentially does nothing else.
 Even if the users of the program are 'friendly', they may make mistakes which the
-program developer(s) did not anticipate. Out-of-bounds errors, invalid pointers and
+program developer did not anticipate. Out-of-bounds errors, invalid pointers and
 past-the-end iterators may all result if the possible violations by the user of the
 End User Contract are not tested.
 
@@ -799,7 +815,7 @@ See End User Provider Strategies for further discussion.
 ### Type Safety is King
 
 As if it needed repeating, the best time to prevent problems is early.
-To that end, program developer(s) must use the type system to their advantage.
+To that end, the program developer must use the type system to their advantage.
 Well written APIs mean that most bugs do not survive compilation.
 
 Here we see `std::span` used to encapsulate the program's implicitly-bound input
@@ -828,18 +844,19 @@ The standard [describes](https://eel.is/c++draft/defns.undefined) UB as:
 
 > behavior for which this document imposes no requirements
 
-In other words, the standard does *not* exclude violations of contracts
-outside of the ISO C++ Standard.
+In other words, the standard does *not* exclude, from its definition of UB,
+violations of contracts outside of the ISO C++ Standard.
 
-A more accurate and helpful view of UB is that it is one possible results of
-a contract violation that occurs at run-time, for which consequences are not described.
+A more accurate and helpful view of UB is that it is one possible result of
+a violation of any contract that occurs at run-time,
+for which consequences are not described.
 
-Part of the confusion is the (false) assumption that because a C++ API has a definition,
-that this somehow means that its behaviour is also defined.
+Part of the confusion is the belief that the definition behind an interface
+grants the user licence to infer a broader contract.
 Let's look again at the function `number_to_letter`.
 
 ```c++
-/// precondition: number is in range [1..26]
+// precondition: number is in range [1..26]
 constexpr auto number_to_letter(int number)
 {
   return char(number - min_number + 'A');
@@ -888,11 +905,11 @@ UB is just a way for authors to limit contracts so that providers can deliver mo
 ### Don't Optimize Until You Sanitize
 
 C++ toolchains increasingly optimise programs assuming that they are correct.
-Optimisations are not free. They demand strict contract observance.
+Optimisations are not free. They demand strict adherence to contracts.
 Historically, UB has been difficult to detect.
 
 Fortunately, toolchains now also provide facilities for detecting some UB.
-These are include dynamic analysis tools known as sanitizers
+These include dynamic analysis tools known as sanitizers
 which instrument code to test for bugs.
 The beauty of undefined behaviour is that it allows this -- and every other valid
 bug-hunting tool -- to be used in conforming code.
@@ -931,7 +948,7 @@ It is undoubtedly better to discover programmer errors early in the development
 process and this has led to a reliance on type safety over all else.
 However, constant expressions illustrate that once compilers are able to detect
 undefined behaviour, what was previously seen as a disadvantage now becomes beneficial.
-And even if an error escapes the build process, it is still better to identify it
+And even if a bug escapes the build process, it is still better to identify it
 during testing than let it survive to production.
 
 ## Conclusion
@@ -945,10 +962,20 @@ In short:
   of the Test User Contract and it's important to understand the special properties
   of this contract.
 * UB is not something that is confined to the ISO C++ Standard.
-* UB is essential for optimising and finding bugs. You should never do one without
-  the other: don't optimize until you sanitize!
+* UB is essential for efficiency, flexibility and for finding bugs.
+* It is increasingly unreasonable to enable optimisations in software
+  without first testing it using sanitizers.
 
 ## Acknowledgements
 
 Thanks to Alicja Przybyś and Andrzej Krzemieński for much feedback, correction
 and guidance.
+
+
+TODOSs
+TBDs
+Anchors
+remove all Doxygen and ///
+real-time vs batch
+Replace used of "input sanitization" with [data validation](https://en.wikipedia.org/wiki/Data_validation).
+—s
