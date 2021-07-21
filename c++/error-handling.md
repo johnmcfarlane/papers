@@ -7,8 +7,8 @@ It draws on personal experience in domains including interactive entertainment,
 large-scale server systems and safety-critical devices.
 
 Contracts and their consequences are the main tool used to frame run-time failure.
-Through the lens of contracts I attempt to show that -- while the correctness of
-C++ programs is a necessity, rather than a luxury -- carefully understood
+Through the lens of contracts I attempt to show that — while the correctness of
+C++ programs is a necessity, rather than a luxury — carefully understood
 contracts are the most effective way to ensure usability, efficiency *and* reliability.
 
 ## Introduction
@@ -89,7 +89,7 @@ All following contracts exist in support of this fulfilment.
   or a 'man' page
 * provider: the program developer
 * user: the program user
-* violation by user: input is sanitized and erroneous input is handled
+* violation by user: input data is validated and erroneous input is handled
   early through normal program control flow
 
 Input might include command-line parameters, UI interaction and data files.
@@ -109,7 +109,7 @@ Fuzzers can help to test whether the program fails to reject erroneous input.
 
 #### Test User Contract
 
-During development, the program -- or portions of it --
+During development, the program — or portions of it —
 may be built for testing purposes.
 
 The program should be instrumented to test for violations of the Dynamically-Enforceable
@@ -131,7 +131,7 @@ are *not* a violation of the Test User Contract.
 
 * agreement: documentation of dynamic analysis tools and/or sanitizers
 * provider:
-  * analysis tool providers whose tools flag violations -- especially of the
+  * analysis tool providers whose tools flag violations — especially of the
     ISO C++ Standard and Toolchain Contract, or
   * C++ API Contract providers who are encouraged to assert that their APIs are used
     correctly.
@@ -357,7 +357,7 @@ The program can emit a run-time diagnostic regarding the contract violation
 and then continue past the assertion. This is not ideal:
 
 * Code size may increase considerably.
-* It involves relying -- for logging purposes -- on a program which exhibits UB.
+* It involves relying — for logging purposes — on a program which exhibits UB.
 
 Nevertheless, it is a popular choice in some domains
 where the cost of terminating a program is great
@@ -504,7 +504,7 @@ memory, file descriptors and peripherals should all be freed up by the system
 once the owning process is ended.
 
 So with caveats, this can be the best approach for reacting to violations of the
-End User Contract -- as well as contracts which cause UB. In profile,
+End User Contract — as well as contracts which cause UB. In profile,
 Safety-Critical System With Redundancy, the requirement to 'fail fast' can be well
 served by this approach. And in profile, Business-Critical Systems, the problems
 associated with bypassing destructors may not be significant.
@@ -568,7 +568,7 @@ These two functions return incorrect results. And by returning anything at all,
 the error is allowed to propagate further into the program.
 By the time the value is observed to be incorrect,
 control may have passed to a distant part of the program
-where the cause of -- and fix for -- the problem are lost from view.
+where the cause of — and fix for — the problem are lost from view.
 
 There are two main solutions to this kind of anti-pattern.
 
@@ -604,7 +604,7 @@ it is far better to clearly put the responsibility onto the caller:
 Example 2 revisited:
 
 ```c++
-/// @pre traffic_light must be red, amber or green
+// precondition: traffic_light must be red, amber or green
 auto pull_away(color traffic_light)
 {
   switch (traffic_light) {
@@ -628,7 +628,7 @@ so it's better not to express the intent that there is.
 Example 2 (Slight Return):
 
 ```c++
-/// @pre traffic_light must be red, amber or green
+// precondition: traffic_light must be red, amber or green
 auto pull_away(color traffic_light)
 {
   switch (traffic_light) {
@@ -690,7 +690,7 @@ use of the `eg_assert` facility:
 constexpr auto min_number{1};
 constexpr auto max_number{26};
 
-/// precondition: number is in range [1..26]
+// precondition: number is in range [1..26]
 constexpr auto number_to_letter(int number)
 {
   eg_assert(number >= min_number);
@@ -722,7 +722,7 @@ so logic to deal with it can dilute the 'intentional' code of a function.
 The contract of `sanitized_run`,
 
 ```c++
-/// @pre Requires sanitized data, i.e. number in the range 1<=number<=26.
+// precondition: Requires validated data, i.e. number in the range 1<=number<=26.
 void sanitized_run(int number)
 {
   fmt::print("{}", number_to_letter(number));
@@ -733,7 +733,7 @@ with respect to `number` is no different to that of `number_to_letter`;
 they both require the same range of values.
 So even an assertion is of little value here.
 
-### Sanitizing Input
+### Validating Input
 
 Code which digests input into the program is a very different matter.
 
@@ -786,7 +786,7 @@ auto unsanitized_run(std::span<char*> args)
     return false;
   }
 
-  // The input is now successfully sanitized. If the program gets this far,
+  // The input is now successfully validated. If the program gets this far,
   // the End User Contract was not violated by the user.
   sanitized_run(number);
 
@@ -911,8 +911,8 @@ Historically, UB has been difficult to detect.
 Fortunately, toolchains now also provide facilities for detecting some UB.
 These include dynamic analysis tools known as sanitizers
 which instrument code to test for bugs.
-The beauty of undefined behaviour is that it allows this -- and every other valid
-bug-hunting tool -- to be used in conforming code.
+The beauty of undefined behaviour is that it allows this — and every other valid
+bug-hunting tool — to be used in conforming code.
 
 Meanwhile, modern software development practices emphasise automated testing regimes.
 It is not uncomment for most of the APIs in a program
@@ -970,12 +970,3 @@ In short:
 
 Thanks to Alicja Przybyś and Andrzej Krzemieński for much feedback, correction
 and guidance.
-
-
-TODOSs
-TBDs
-Anchors
-remove all Doxygen and ///
-real-time vs batch
-Replace used of "input sanitization" with [data validation](https://en.wikipedia.org/wiki/Data_validation).
-—s
