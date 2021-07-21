@@ -907,6 +907,33 @@ you are strongly advised to test your program code with sanitizers.
 Combined with the approaches detained in this document, this will lead to significantly
 less defective software without the necessity to compromise on safety or performance.
 
+### Don't Rely on Sanitizers Alone
+
+Unfortunately, sanitizers are far from perfect.
+Some unambiguous bugs are prohibitively difficult to detect at run-time.
+
+Further, sanitizers sometimes fail to instrument for UB. For example, if the logic
+which identifies an instance of UB is located in the compiler's optimiser,
+then instrumentation will not occur unless the optimiser is enabled. For this reason,
+it is important to test code with settings as close as possible to production.
+
+Finally, not all bugs are undefined behaviour.
+Some bugs are only End User Contract violations.
+They are sometimes described as errors in the 'business logic' of the program.
+Because of this, unit testing will always play a vital role in a
+healthy development process.
+
+### UB Considered Helpful
+
+Nevertheless, developers who aim for program correctness must recognise that a formal
+notion of bugs which is machine-testable, is every bit as important as type safety.
+It is undoubtedly better to discover programmer errors early in the development
+process and this has led to a reliance on type safety over all else.
+However, constant expressions illustrate that once compilers are able to detect
+undefined behaviour, what was previously seen as a disadvantage now becomes beneficial.
+And even if an error escapes the build process, it is still better to identify it
+during testing than let it survive to production.
+
 ## Conclusion
 
 In short:
