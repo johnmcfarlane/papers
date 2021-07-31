@@ -902,6 +902,46 @@ They are able to generate highly optimised code, by assuming contract fulfilment
 But at the end of the day, they are not magic and nor is undefined behaviour.
 UB is just a way for authors to limit contracts so that providers can deliver more.
 
+### Wide Or Narrow?
+
+In the above example, `number_to_letter` is what is described as a narrow contract.
+The user of the API must not deviate from the expected usage
+and to do so necessarily introduces undefined behaviour.
+
+One way to widen `number_to_letter`'s contract would be:
+
+```c++
+// returns corresponding uppercase letter iff number is in range [1..26]
+constexpr auto number_to_letter(int number)
+-> std::optional<char>
+{
+  if (number < min_number || number > max_number) {
+    return std::nullopt;
+  }
+
+  constexpr auto lookup_table = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  return lookup_table[number - min_number];
+}
+```
+
+The code is now likely to be slower to comprehend, compile and execute.
+The API is more difficult to use and the user is encouraged to deal at run-time
+with bugs which should simply have been removed.
+In general, wide contracts are the wrong choice for components of any
+fully-digital automated system.
+
+But when a human is in the loop, a wide contract is an essential UI feature.
+Humans often require feedback in order to correct mistakes.
+We consider two contracts which involve a human at run-time:
+
+* the program user in the End User Contract, and
+* the engineer in the Test User Contract.
+
+However, the Test User Contract -- ever enigmatic -- relies on the narrowness of
+the C++ API Contract in order to provide a wide contract of its own.
+Thus by widening a C++ API Contract,
+the contract author impedes the engineer's ability to identify bugs.
+
 ### Don't Optimize Until You Sanitize
 
 C++ toolchains increasingly optimise programs assuming that they are correct.
