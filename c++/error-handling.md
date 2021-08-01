@@ -407,39 +407,149 @@ The developer can choose what happens on discovery:
 This choice will be affected by factors such as the scale of the fleet,
 exposure to malicious agents and the cost of incorrect behaviour.
 
-## End User Provider Strategies
+## Handling Errors
 
-The End User provider is charged with enforcement of the End User Contract,
-e.g. by emitting diagnostics and returning non-zero status codes.
+The End User Contract provider must account for user contract violations.
+In other words, the program must handle errors.
 
-Several approaches that can be taken are detailed below.
+Unfortunately, this is not a straightforward task.
+Section 2 of [P0709R4, Zero-overhead Deterministic Exceptions: Throwing values](https://wg21.link/p0709r4),
+"Why do something: Problem description, and root causes"
+does a good job of describing the C++ error-handling landscape.
 
-Note: these choices are tempered by the distinction between libraries and programs.
-The author of a program can choose a strategy as they see fit.
-But the author of a library must anticipate what choices
-their library user might make.
-This is a general problem for C++.
+### Software Terrain
 
-### Return Values
+Having identified the subset of disappointment that counts as errors,
+the problem remains: how to deliver the bad news to the user.
+The signal must often travel across large sections of the code
+and different types of programs and components affect the method of delivery.
 
-Some programs are simple enough that Boolean return values suffice as
+#### Batch Processing
+
+The simplest kind of code involves a finite amount of processing and no user interaction.
+All flow control can be expressed within a simple call graph
+and all results — disappointing or otherwise — can be delivered on completion.
+
+Entire programs can be written this way.
+Diagnostic messages can be emitted at the point where the error is first detected.
+And only a failure code is returned by the `main` function.
+
+#### Realtime Processing
+
+Some programs such as services, applications, control systems, and interactive simulations
+execute indefinitely.
+
+Realtime programs undergo an initialisation phase
+in which the starting state of the system is established.
+During this phase, they behave like a batch process, and
+can exit if inputs are ill-formed.
+
+However, once the initialisation phase is ended,
+realtime phase — sometimes called the 'main loop' — is entered.
+During the this phase, a realtime program, cannot simply exit on error.
+It must do what they can to convey disappointment to the user and carry on.
+
+#### Libraries
+
+Libraries add a new dimension. A library might be used across many programs.
+Some of those programs might be batch and some might be realtime.
+Thus, either the applicability, or the choice of error-handling strategy is limited.
+
+### Error Handling Techniques
+
+Now that the different types of terrain are established,
+techniques can be evaluated based on how well they cover different terrains.
+
+#### Diagnostics
+
+While not related to control flow or to communication back to an external process,
+the logging or display of detailed error messages to the user is very important.
+A clear message in human-readable form is what the user needs to fix most errors.
+
+In an interactive program, this may be presented in the form of a dialogue box,
+an output window or a status bar.
+Otherwise, logging/console output is the medium through which the users is reached.
+Printing a message to the error stream is usually adequate.
+
+```c++
+std::cerr << std::format("failed to open file, \"{}\"\n", filename);
+```
+
+If the program can carry on past this line of code as normal,
+what we are dealing with probably isn't an error at all.
+If this is an error, typical control flow will be dramatically altered
+and further choices will need to be made...
+
+#### Return Values
+
+Some programs are simple enough that single scalar return values suffice as
 a method for sending news of failure back to the calling process.
 
-However, things get complicated quickly and unfortunately,
-this choice cannot be changed easily once code is written.
+```c++
+// print file's size or return false
+auto file_size(char const* filename)
+{
+  std::ifstream in(filename);
+  if (!in) {
+    std::cerr << std::format("failed to open file \"{}\"\n", filename);
+    return false;
+  }
 
-### Vocabulary Return Types
+  std::cout << std::format("{}\n", in.tellg());
+  return true;
+}
+```
 
-One disadvantage of reporting the success of the function as the return value is
-that C++ functions can only return one object.
-APIs are more readable if they return the results of a successful invocation.
-So returning errors gets in the way of readability.
+There is a small cost here on every call
+and explicit logic in the calling code needs to handle the disappointment.
+But it's an tempting choice for batch programs reporting errors via exit codes.
+Even in realtime and library code,
+there is no more efficient way to report disappointment to the caller.
 
-To some degree or another, types such as `expected`, `outcome` and `optional` are
-capable of packing together both the desired result and the successfulness.
-They offer determinism and fast failure in the disappointing case.
+Additionally, the receiving logic is placed where there is greater context.
+Further down the call stack, there are richer diagnostics to be emitted:
 
-### Exceptions
+```c++
+auto config_file_size()
+{
+  if (!file_size("default.cfg")) {
+    std::cerr << "failed to get the size of the config file";
+  }
+}
+```
+
+A problem arises if the function already returns a result.
+
+```c++
+// how is disappointment reported now?
+auto file_size(char const* filename)
+{
+  std::ifstream in(filename);
+  return in.tellg();
+}
+```
+
+C++ functions only return one object
+and the most readable functions return the desired result as that object.
+
+To some degree or other, types such as `expected`, `outcome` and `optional` facilitate
+returning of both the desired result combined with the successfulness:
+
+```c++
+auto file_size(char const* filename)
+-> std::optional<std::ifstream::pos_type>
+{
+  std::ifstream in(filename);
+  if (!in) {
+    std::cerr << std::format("failed to open file \"{}\"\n", filename);
+    return std::nullopt;
+  }
+
+  return in.tellg();
+}
+```
+
+#### Exceptions
 
 Exceptions are well-suited to error handling. They keep the 'happy path' free of
 error propagation logic which should make them more efficient in the case that nothing
@@ -463,7 +573,11 @@ bring other costs.
 * Even when not thrown, they can make it difficult to reason about control flow,
   which has implications for efficiency.
 
-### Abnormal Program Termination
+For batch programs on well-resourced systems, they are a very good choice.
+For resource-constrained or realtime systems or libraries which target those systems
+the costs and benefits of exception handling should be considered.
+
+#### Abnormal Program Termination
 
 A program can be stopped quickly via APIs such as `std::terminate` and `std::abort`.
 
@@ -804,7 +918,7 @@ program developer did not anticipate. Out-of-bounds errors, invalid pointers and
 past-the-end iterators may all result if the possible violations by the user of the
 End User Contract are not tested.
 
-See End User Provider Strategies for further discussion.
+See Handling Errors for further discussion.
 
 ### Type Safety is King
 
