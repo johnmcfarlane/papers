@@ -1081,6 +1081,12 @@ Combined with the approaches detailed in this document, this will lead to signif
 less defective software without the need to compromise safety or performance.
 
 If your toolchain provider doesn't provide sanitizers in its latests products,
+question whether it is of suitable quality. The author's experience is that some
+tools which are certified for use in safety-critical software are geared towards
+methodologies which predate the era of test-driven development.
+They are successful because they reduce insurance premiums for software developers
+whose practices have not improved in decades.
+However, they are part of an ecosystem that increasingly neglects the safety of end-users.
 
 
 ### Don't Rely on Sanitizers Alone
