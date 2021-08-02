@@ -1088,6 +1088,17 @@ They are successful because they reduce insurance premiums for software develope
 whose practices have not improved in decades.
 However, they are part of an ecosystem that increasingly neglects the safety of end-users.
 
+### Use All the Tools
+
+As well as enabling sanitizers and static analysers and elevating compiler warnings,
+using multiple toolchains will increase the range of bugs for which you test.
+Even if your target compiler does not have those facilities, some (though not all)
+bugs will be detected by testing your software on x86-64 production system using
+free operating systems and toolchains, or in emulators that more closely resemble
+the target platform.
+
+The prevalence of low-quality toolchains in safety-critical and embedded domains
+is no excuse for doing nothing.
 
 ### Don't Rely on Sanitizers Alone
 
