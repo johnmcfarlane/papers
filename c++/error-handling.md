@@ -1117,16 +1117,24 @@ They are sometimes described as bugs in the 'business logic' of the program.
 Because of this, unit testing will always play a vital role in a
 healthy development process.
 
-### UB Considered Helpful
+### A Carefully Controlled Vagueness
 
-Nevertheless, developers who aim for program correctness must recognise that a formal
-notion of bugs which is machine-testable, is every bit as important as type safety.
+Nevertheless, developers who value program correctness recognise that a formal,
+machine-testable notion of bugs is every bit as important as type safety.
 It is undoubtedly better to discover bugs early in the development
-process and this has led to a reliance on type safety over all else.
-However, constant expressions illustrate that once compilers are able to detect
-undefined behaviour, what was previously seen as a disadvantage now becomes beneficial.
-And even if a bug escapes the build process, it is still better to identify it
-during testing than let it survive to production.
+process and this is why static typing promotes safer code.
+
+However, constant expressions illustrate that once tools are able to detect
+Unambiguous Bugs during compilation,
+what was previously seen as dynamic and therefore problematic
+quickly becomes static and therefore beneficial.
+But even if a bug escapes the build process, it is still better to identify it
+during testing than to let it survive to production.
+
+Defining the behaviour of code that contains a bug
+only makes is harder to identify the bug during development.
+For this reason, much undefined behaviour, including all Unambiguous Bugs
+is helpful for developing correct, safe code — provided it is tested for.
 
 ## Conclusion
 
