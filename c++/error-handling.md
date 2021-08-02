@@ -502,7 +502,7 @@ auto file_size(char const* filename)
 
 There is a small cost here on every call
 and explicit logic in the calling code needs to handle the disappointment.
-But it's an tempting choice for batch programs reporting errors via exit codes.
+But it's a tempting choice for batch programs reporting errors via exit codes.
 Even in realtime and library code,
 there is no more efficient way to report disappointment to the caller.
 
@@ -636,7 +636,8 @@ Even when it is possible, it is rarely worthwhile taking this risk.
 ### The Pit of False Security
 
 When the advertised goal of a C++ API cannot be achieved,
-it should be difficult for the user of the API to escape the disappointment.
+it should be difficult for the user of the API to ignore the disappointment.
+Defending against failure by allowing the caller to proceed as normal is unhelpful.
 
 Example 1:
 
@@ -707,9 +708,9 @@ it is far better to clearly put the responsibility onto the caller:
 
 * Make it clear that it's a bug for the API to be used disappointingly.
 * Fulfil the obligations of a Test User Contract provider and help the user discover
-  the bug.
+  the bug, e.g. with assertions.
 
-Example 2 revisited:
+Example 2 corrected:
 
 ```c++
 // precondition: traffic_light must be red, amber or green
@@ -733,7 +734,7 @@ Note that the provider might be tempted to add a `default` clause to the switch 
 This is not advised. There is no acceptable default behaviour here
 so it's better not to express the intent that there is.
 
-Example 2 (Slight Return):
+Example 2 mis-corrected:
 
 ```c++
 // precondition: traffic_light must be red, amber or green
@@ -747,7 +748,7 @@ auto pull_away(color traffic_light)
     case color::green:
       return true;
     default:
-      // worse; there is no fourth alternative so why imply that there is?
+      // worse; there are no more alternatives so why imply that there are?
 
       // What if someone adds enumerator, color::blue?
       // The compiler would not complain that there is no "case color::blue".
@@ -764,7 +765,7 @@ illustrate the recommendations collected in this document.
 
 ### Assertion Logic
 
-Here is an example assert function which illustrates the above Unambiguous Bug Strategies.
+Here is an example assert function which illustrates different Enforcement Profiles.
 It is compatible with some modern tool-chains.
 
 ```c++
@@ -814,18 +815,18 @@ Communication can be through documentation.
 
 The contract is composed of conditions.
 Some conditions can be formally expressed.
-Some such conditions can be expressed in the code itself.
-Some languages support format expression as part of the interface.
+Some of those conditions can be expressed in the code itself.
+Some languages support formal expression as part of the interface.
 Many languages support expression of conditions within the implementation.
 
 The `eg_assert` invocations above are examples of expressions within the implementation.
 
 ### Calling a C++ API
 
-In general, APIs should not attempt to handle out-of-contract usage.
+In general, C++ APIs should not attempt to handle out-of-contract usage.
 As with the `pull_away` example above, normalising bugs has many negative consequences.
 The set of possible violations is likely to be vast
-so logic to deal with it can dilute the 'intentional' code of a function.
+so logic to deal with it can dilute the essential code of a function.
 
 The contract of `sanitized_run`,
 
@@ -843,11 +844,16 @@ So even an assertion is of little value here.
 
 ### Validating Input
 
-Code which digests input into the program is a very different matter.
+Code which ushers external input into the program is a very different matter.
 
 The program's developer(s) cannot assume that its input is error-free.
+Even if the users of the program are 'friendly', they may make mistakes which the
+program developer did not anticipate.
+
 In order to be confident that no Unambiguous Bugs can occur,
 input must first be checked.
+If the possible violations by the user of the End User Contract are not tested,
+out-of-bounds array access, invalid pointers and past-the-end iterators may all result.
 
 In this example, the command line parameter is converted to an `int`.
 
@@ -904,21 +910,24 @@ auto unsanitized_run(std::span<char*> args)
 
 In contrast with `sanitized_run`, `unsanitized_run` does a lot of validating of data
 and little else.
+It may be difficult to determine until quite far in the process whether input is
+well-formed. But as a general rule, it is better to fail fast.
 
-Like ingested poison, .
 This can be seen as analogous to digestion:
 External matter is ingested, harmful or unwanted matter is rejected,
 and if anything remains, it is accepted into the organism and processed.
+The sooner poisons are rejected, the less harm they can do.
 
-It may be difficult to determine until quite far in the process whether input is well-formed.
+Because of the effort involved in validating input, it is highly recommended
+that developers leverage 3rd-party libraries designed for this purpose.
+Command-line argument parsers such as [Lyra](https://github.com/bfgroup/Lyra)
+could be used to replace most of `unsanitized_run`.
+Libraries that handle data interchange formats can also save effort and reduce risk.
 
-It essentially does nothing else.
-Even if the users of the program are 'friendly', they may make mistakes which the
-program developer did not anticipate. Out-of-bounds errors, invalid pointers and
-past-the-end iterators may all result if the possible violations by the user of the
-End User Contract are not tested.
-
-See Handling Errors for further discussion.
+However, application-agnostic libraries
+can only transforms data from one format to another.
+There may still be errors in the input which are application-specific.
+For example, the range check of `number` in `unsanitized_run` must still be performed.
 
 ### Type Safety is King
 
@@ -952,7 +961,7 @@ The standard [describes](https://eel.is/c++draft/defns.undefined) UB as:
 
 > behavior for which this document imposes no requirements
 
-In other words, the standard does *not* exclude, from its definition of UB,
+This implies that, the standard does *not* exclude, from its definition of UB,
 violations of contracts outside of the ISO C++ Standard.
 
 A more accurate and helpful view of UB is that it is one possible result of
@@ -972,21 +981,22 @@ constexpr auto number_to_letter(int number)
 ```
 
 It so happens that we can see the definition of `number_to_letter`. Even if we couldn't,
-we might feel confident guessing roughly how it was implemented.
+we might feel confident in guessing roughly how it was implemented.
 And (assertions aside) we might feel confident to say that the function does not
-exhibit undefined behaviour, even when the precondition is violated.
+exhibit undefined behaviour — even when the precondition is violated.
 
-We would be committing a grave error.
+This is categorically false.
 
 Firstly, the author has effectively limited the warranty of the contract.
 They are declining to make a guarantee about what the result of the call will be
-in the fact of contract violation. Put another way, they decline to define the behaviour.
+in the event of contract violation. Put another way, they decline to define the behaviour.
 
 Secondly, the provider is under no obligation
 to have tested the behaviour outside of contract.
 So any and all assurances gathered through automated testing
 do not apply to out-of-contract use.
-And in the absence of testing, it's easy to miss a failure case, e.g.:
+And in the absence of testing, it's easy to miss a failure case,
+[e.g.](https://godbolt.org/z/5e3cvj95f):
 
 ```c++
 // signed integer overflow resulting in ISO C++ Standard UB
@@ -995,7 +1005,7 @@ number_to_letter(0x7fffffff);
 
 Finally, the provider reserves the right to change the implementation as they choose.
 Assumptions drawn from the original definition are already false.
-But they become yet more dangerous if applied to a new definition, for example:
+But they become yet more dangerous if applied to a new definition. For example:
 
 ```c++
 constexpr auto number_to_letter(int number)
@@ -1013,13 +1023,12 @@ UB is just a way for authors to limit contracts so that providers can deliver mo
 ### Wide Or Narrow?
 
 In the above example, `number_to_letter` is what is described as a narrow contract.
-The user of the API must not deviate from the expected usage
-and to do so necessarily introduces undefined behaviour.
+The user of the API can — but must not — deviate from the expected usage.
 
 One way to widen `number_to_letter`'s contract would be:
 
 ```c++
-// returns corresponding uppercase letter iff number is in range [1..26]
+// returns corresponding letter iff number is in range [1..26]
 constexpr auto number_to_letter(int number)
 -> std::optional<char>
 {
@@ -1027,25 +1036,24 @@ constexpr auto number_to_letter(int number)
     return std::nullopt;
   }
 
-  constexpr auto lookup_table = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  return lookup_table[number - min_number];
+  return char(number - min_number + 'A');
 }
 ```
 
-The code is now likely to be slower to comprehend, compile and execute.
+The code is now likely to be slower to comprehend, to compile and to execute.
 The API is more difficult to use and the user is encouraged to deal at run-time
 with bugs which should simply have been removed.
 In general, wide contracts are the wrong choice for components of any
 fully-digital automated system.
 
 But when a human is in the loop, a wide contract is an essential UI feature.
-Humans often require feedback in order to correct mistakes.
-We consider two contracts which involve a human at run-time:
+Humans often require feedback in order to identify mistakes.
+Humans participate in two contracts related to running programs:
 
 * the program user in the End User Contract, and
 * the engineer in the Test User Contract.
 
-However, the Test User Contract — ever enigmatic — relies on the narrowness of
+Paradoxically, the Test User Contract relies on the narrowness of
 the C++ API Contract in order to provide a wide contract of its own.
 Thus by widening a C++ API Contract,
 the contract author impedes the engineer's ability to identify bugs.
@@ -1054,23 +1062,23 @@ the contract author impedes the engineer's ability to identify bugs.
 
 C++ toolchains increasingly optimise programs assuming that they are correct.
 Optimisations are not free. They demand strict adherence to contracts.
-Historically, UB has been difficult to detect.
 
-Fortunately, toolchains now also provide facilities for detecting some UB.
+Historically, such contract violations have been difficult to detect.
+Fortunately, modern toolchains provide facilities for their detection.
 These include dynamic analysis tools known as sanitizers
-which instrument code to test for bugs.
+which instrument code to test for bugs at run-time.
 The beauty of undefined behaviour is that it allows this — and every other valid
 bug-hunting tool — to be used in conforming code.
 
 Meanwhile, modern software development practices emphasise automated testing regimes.
-It is not uncomment for most of the APIs in a program
-to be tested for provider C++ API Contract violation frequently during development.
-Therefore, there is strong reason to use sanitizers as a matter of good practice.
+It is not uncommon for most of the APIs in a program
+to be tested for provider contract violation frequently during development.
+Such tests are an opportunity to enable sanitizers.
 
 If you wish to enable compiler optimisations in the program you provide to users
-you are strongly advised to test your program code with sanitizers.
-Combined with the approaches detained in this document, this will lead to significantly
-less defective software without the necessity to compromise on safety or performance.
+you are strongly advised to ***test your program code with sanitizers***.
+Combined with the approaches detailed in this document, this will lead to significantly
+less defective software without the need to compromise safety or performance.
 
 If your toolchain provider doesn't provide sanitizers in its latests products,
 
@@ -1080,14 +1088,15 @@ If your toolchain provider doesn't provide sanitizers in its latests products,
 Unfortunately, sanitizers are far from perfect.
 Some unambiguous bugs are prohibitively difficult to detect at run-time.
 
-Further, sanitizers sometimes fail to instrument for UB. For example, if the logic
+Further, sanitizers sometimes fail to instrument for UB as advertised.
+For example, if the logic
 which identifies an instance of UB is located in the compiler's optimiser,
 then instrumentation will not occur unless the optimiser is enabled. For this reason,
 it is important to test code with settings as close as possible to production.
 
 Finally, not all bugs are undefined behaviour.
-Some bugs are only End User Contract violations.
-They are sometimes described as errors in the 'business logic' of the program.
+Some bugs violate only the End User Contract.
+They are sometimes described as bugs in the 'business logic' of the program.
 Because of this, unit testing will always play a vital role in a
 healthy development process.
 
@@ -1095,7 +1104,7 @@ healthy development process.
 
 Nevertheless, developers who aim for program correctness must recognise that a formal
 notion of bugs which is machine-testable, is every bit as important as type safety.
-It is undoubtedly better to discover programmer errors early in the development
+It is undoubtedly better to discover bugs early in the development
 process and this has led to a reliance on type safety over all else.
 However, constant expressions illustrate that once compilers are able to detect
 undefined behaviour, what was previously seen as a disadvantage now becomes beneficial.
