@@ -104,51 +104,6 @@ Such violations could result in security vulnerabilities
 or unsafe program behaviour in safety-critical applications.
 Fuzzers can help to test whether the program fails to reject erroneous input.
 
-#### Test User Contract
-
-During development, the program — or portions of it —
-may be built for testing purposes.
-
-The program should be instrumented to test for as many violations of C++ API Contracts
-as possible.
-The program may be built to test the End User Contract —
-as is the case for unit tests.
-As many violations as is practical should be checked.
-
-Where instrumentation leads to trapping of a contract violation,
-this should be treated the same way that user errors are treated
-in the End User Contract above, e.g.
-by terminating with a helpful diagnostic and non-zero exit status.
-
-***Important:*** this changes the status of violations described elsewhere
-from bugs to errors.
-It is important to understand that what may be considered a bug outside of testing
-(e.g. signed integer overflow or performing binary search on an unsorted sequence)
-is here instead an error.
-Bugs written by the program developer which are trapped during testing
-are *not* a violation of the Test User Contract.
-
-* agreement: documentation of dynamic analysis tools and/or sanitizers
-* provider:
-  * analysis tool providers whose tools flag violations — especially of the
-    ISO C++ Standard and Toolchain Contract, or
-  * C++ API Contract providers who are encouraged to assert that their APIs are used
-    correctly.
-* user: an engineer who may be some combination of
-  * the program developer testing a C++ API Contract using unit tests,
-  * the test engineer testing the End User Contract, or
-  * the dev-ops engineer testing either of the above as part of a CI pipeline
-* violation by user:
-  * If a C++ API Contract violation could reasonably be identified (e.g. through
-    an assertion) but is not, then the program developer failed to use the tool effectively.
-
-Examples of contract trapping techniques that are commonly employed are
-
-* API contract violation tests (e.g. assertions, pre-conditions and post-conditions),
-* API contract fulfilment tests (e.g. unit tests), and
-* ISO C++ Standard contracts (e.g. by enabling sanitizers
-  and flags such as `_GLIBCXX_DEBUG` and `_ITERATOR_DEBUG_LEVEL`).
-
 #### ISO C++ Standard
 
 A typical language specification for a C++ program is a revision of
@@ -217,6 +172,51 @@ are outside the scope of this document.
 The former is left to the compiler to enforce.
 The latter can only be dealt with by developers.
 All things being equal, good APIs favours the former and avoid the latter.
+
+#### Test User Contract
+
+During development, the program — or portions of it —
+may be built for testing purposes.
+
+The program should be instrumented to test for as many violations of C++ API Contracts
+as possible.
+The program may be built to test the End User Contract —
+as is the case for unit tests.
+As many violations as is practical should be checked.
+
+Where instrumentation leads to trapping of a contract violation,
+this should be treated the same way that user errors are treated
+in the End User Contract above, e.g.
+by terminating with a helpful diagnostic and non-zero exit status.
+
+***Important:*** this changes the status of violations described elsewhere
+from bugs to errors.
+It is important to understand that what may be considered a bug outside of testing
+(e.g. signed integer overflow or performing binary search on an unsorted sequence)
+is here instead an error.
+Bugs written by the program developer which are trapped during testing
+are *not* a violation of the Test User Contract.
+
+* agreement: documentation of dynamic analysis tools and/or sanitizers
+* provider:
+  * analysis tool providers whose tools flag violations — especially of the
+    ISO C++ Standard and Toolchain Contract, or
+  * C++ API Contract providers who are encouraged to assert that their APIs are used
+    correctly.
+* user: an engineer who may be some combination of
+  * the program developer testing a C++ API Contract using unit tests,
+  * the test engineer testing the End User Contract, or
+  * the dev-ops engineer testing either of the above as part of a CI pipeline
+* violation by user:
+  * If a C++ API Contract violation could reasonably be identified (e.g. through
+    an assertion) but is not, then the program developer failed to use the tool effectively.
+
+Examples of contract trapping techniques that are commonly employed are
+
+* API contract violation tests (e.g. assertions, pre-conditions and post-conditions),
+* API contract fulfilment tests (e.g. unit tests), and
+* ISO C++ Standard contracts (e.g. by enabling sanitizers
+  and flags such as `_GLIBCXX_DEBUG` and `_ITERATOR_DEBUG_LEVEL`).
 
 ### Types of Contract Violation
 
