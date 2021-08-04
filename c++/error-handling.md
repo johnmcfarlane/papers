@@ -20,7 +20,7 @@ that [a C++ program](https://eel.is/c++draft/basic.link#def:program) might elici
 I argue that all disappointment involves the violation of a contract
 and that the correct strategy for handling a violation depends on two things:
 
-1. the parameters of the contract, and
+1. certain attributes of the contract, and
 1. the usage profile of the program.
 
 ### Bugs and Errors
@@ -34,12 +34,12 @@ makes clear the distinction between errors and bugs:
 
 Note: a third category, _abstract machine corruption_ is identified by P0709R4,
 which includes heap exhaustion and stack overflow.
-But it does not relate to contracts involving C++ program developers.
+But it relates less to contracts involving C++ program developers.
 
 There is one time when the bug versus error distinction breaks down.
 That is when considering the Test User Contract.
 When testing for contract violations,
-the user wishes for bugs to behave like errors.
+the user wishes for bugs to be treated as errors.
 
 ## Contracts
 
@@ -55,13 +55,11 @@ other attributes bear mentioning.
 #### Provider Contract Violation
 
 Both the user and the provider have contractual obligations.
-However, this document concentrates on user contract violation.
+However, this document concentrates on user contract violation for two reasons:
 
-Why?
-
-Firstly, it's simpler to focus in on one side of the contract.
-Secondly, the user is typically the less experienced and more error-prone of
-the two parties. Therefore, violation by the user is more common.
+1. It's simpler to focus in on one side of the contract.
+2. The user is typically the less experienced and more error-prone of
+   the two parties. Therefore, violation by the user is more common.
 
 For example, in the case of the ISO C++ Standard (below),
 the toolchain provider is far less likely to be the cause of a contract
@@ -79,27 +77,24 @@ In a C++ program, some contracts that matter are as follows.
 #### End User Contract
 
 The overarching contract that a program must fulfil is to its end user.
-All following contracts exist in support of this fulfilment.
+The other contracts exist in support of this fulfilment.
 
 * agreement: program documentation, possibly including a `--help` option
-  or a 'man' page
+  or a _man_ page
 * provider: the program developer
 * user: the program user
-* violation by user: input data is validated and erroneous input is handled
-  early through normal program control flow
-
-Input might include command-line parameters, UI interaction,
-data files and network traffic.
-Input identified as erroneous should be rejected by the program.
+* violation by user: input such as command-line parameters, UI interaction,
+  data files, and network traffic is validated and errors are handled through
+  program control flow, typically leading to rejection.
 
 Where possible, rejection should be accompanied by meaningful feedback
-which helps the user correct the input and increase the chance of subsequent success.
+which helps the user correct the input and increases the chance of later success.
 For example,
 meaningful feedback might take the form of a diagnostic emitted on the error stream,
 followed by exit with non-zero status.
 
 Input that is not rejected must be incapable of causing violations
-of any below-mentioned contracts.
+of any of the other contracts.
 Such violations could result in security vulnerabilities
 or unsafe program behaviour in safety-critical applications.
 Fuzzers can help to test whether the program fails to reject erroneous input.
@@ -158,7 +153,7 @@ auto sqrt(double a)
 
 are outside the scope of this document.
 The former is left to the compiler to enforce.
-The latter can only be dealt with by developers.
+The latter is identified through unit testing and by scrutinising the code.
 All things being equal, good APIs favours the former and avoid the latter.
 
 #### Test User Contract
@@ -166,29 +161,36 @@ All things being equal, good APIs favours the former and avoid the latter.
 During development, the program — or portions of it —
 may be built for testing purposes.
 
-The program should be instrumented to test for as many violations of C++ API Contracts
-as possible.
-The program may be built to test the End User Contract —
-as is the case for unit tests.
-As many violations as is practical should be checked.
+Commonly, tests aim to detect provider contract violations of
 
-Where instrumentation leads to trapping of a contract violation,
-this should be treated the same way that user errors are treated
-in the End User Contract above, e.g.
+* the End User Contract using whole-program or black box testing
+  (e.g. functional testing), and
+* the C++ API Contract using unit tests, which exercise individual APIs.
+
+However, it is also important to test for user contract violations of
+the ISO C++ Standard, and C++ API Contract.
+This can be achieved using assertions and toolchain-specific tools:
+
+* Assertions can be configured to trap provider *and* user C++ API Contract violations.
+* Dynamic analysis tools such as sanitizers can trap
+  ISO C++ Standard violation by the program developer.
+
+Where testing leads to trapping of a contract violation,
+this should be treated in the same way that user errors are treated
+in the End User Contract, e.g.
 by terminating with a helpful diagnostic and non-zero exit status.
 
-***Important:*** this changes the status of violations described elsewhere
-from bugs to errors.
-It is important to understand that what may be considered a bug outside of testing
+***Important:***
+It is important to understand that what is considered a bug outside of testing
 (e.g. signed integer overflow or performing binary search on an unsorted sequence)
-is here instead an error.
+now becomes merely an error.
 Bugs written by the program developer which are trapped during testing
 are *not* a violation of the Test User Contract.
 
 * agreement: documentation of dynamic analysis tools and/or sanitizers
 * provider:
   * analysis tool providers whose tools flag violations — especially of the
-    ISO C++ Standard, or
+    ISO C++ Standard — or
   * C++ API Contract providers who are encouraged to assert that their APIs are used
     correctly.
 * user: an engineer who may be some combination of
@@ -218,7 +220,7 @@ time, but which it is possible to test at run-time.
 * agreement: documentation (ideally self-documentation)
 * provider: C++ API implementer (often also the program developer)
 * user: the program developer
-* violation by user: undefined behaviour
+* violation by user: undefined behaviour, trappable
 
 #### Unambiguous Bugs
 
@@ -232,7 +234,7 @@ that can be identified programmatically and unambiguously at run-time.
 * agreement: constituent contract agreements
 * provider: constituent contract providers
 * user: the program developer
-* violation by user: undefined behaviour
+* violation by user: undefined behaviour, trappable
 
 Examples of violations include
 
@@ -269,27 +271,32 @@ constexpr auto a{1/0};
 
 ### Unambiguous Bug Strategies
 
-As of C++20, Dynamically-Enforceable ISO C++ Standard violations require
-system or toolchain support to identify. For example,
-null pointer dereferences may be trapped by systems with virtual memory, and
-out-of-bounds array lookup may be trapped by dynamic analysis tools.
-
-Dynamically-Enforceable C++ API Contract violations must be trapped using assertions.
-
-Broadly, there are three possible strategies that can be adopted
-at the point where a violation occurs.
+Broadly, there are three strategies that can be applied
+in situations where a violation might occur in a running program.
 
 #### Trap Enforcement Strategy
 
-The program can stop. (It may also emit a diagnostic message.)
+The program can stop. (It may also emit a diagnostic message or break in a debugger.)
 
-This has the disadvantage that the program completely fails to perform its task.
-But the advantage is that no further incorrect behaviour
-will be exhibited by the program; the user is protected from unbounded risk.
-It is also of most help to the developer as they are strongly encouraged
-to confront the bug early.
+Dynamically-Enforceable ISO C++ Standard violations require
+system or toolchain support to trap. For example,
+null pointer dereferences may be trapped by systems with virtual memory, and
+out-of-bounds array lookup may be trapped by dynamic analysis tools such as sanitizers.
 
-Because of these advantages, it makes a good default strategy.
+Dynamically-Enforceable C++ API Contract violations must be trapped using assertions.
+
+Disadvantages:
+
+* Code may need to be instrumented, incurring run-time cost.
+* On violation, the program completely fails in its task.
+
+Advantages:
+
+* No further incorrect behaviour will be exhibited by the program;
+  the user is protected from unbounded risk.
+* The developer is compelled to confront bugs as a priority.
+
+Because of these advantages, trapping makes a good default strategy.
 This is the default chosen by [the `assert` macro](https://en.cppreference.com/w/cpp/error/assert)
 and by most sanitizers.
 
@@ -297,7 +304,8 @@ and by most sanitizers.
 
 The program can assume that defects have been eliminated.
 Assuming bugs do not occur, no assert expression will ever be false.
-This means that assert statements behave as if they are not there.
+This means that instrumentation is unnecessary
+and assert statements behave as if they are not there:
 
 ```c++
 #define ASSERT(condition) ((void)0)
@@ -305,13 +313,11 @@ This means that assert statements behave as if they are not there.
 
 Further, users can communicate this assumption to the compiler
 in the form of optimisation flags.
-These allow the compiler to produce assembler
-approaching the efficiently of a human programmer.
 
 Finally, user-defined assertions may also communicate this assumption to the optimiser:
 
 ```c++
-#define ASSERT(condition) ((cond) ? static_cast<void>(0) : __builtin_unreachable())
+#define ASSERT(condition) ((condition) ? static_cast<void>(0) : __builtin_unreachable())
 ```
 
 Advantages:
@@ -322,38 +328,53 @@ Advantages:
 
 Disadvantages:
 
-* Developers who wish to optimise and release defective code will see
-  further deterioration in the behaviour of their program.
+* Developers must first test their code thoroughly
+  using the Trap Enforcement Strategy and
+  taking full advantage of the Test User Contract.
+* Developers who instead choose to optimise defective code will see
+  pronounced deterioration in the behaviour of their program.
 
-Concerns about this deterioration are raised in ([P2064](https://wg21.link/p2064r0)).
-It indicates than an alarming amount of defective code reaches production
-without being properly tested.
+Concerns about this deterioration are raised in ([P2064R0](https://wg21.link/p2064r0))
+suggesting than an alarming amount of defective code reaches production
+without first being tested using the trap strategy.
 It is always unwise to release software that contains undefined behaviour.
 Optimising such programs only throws fuel on an already-lit fire.
-In the meantime, authors who tested their code using modern tools and techniques
+Meanwhile, authors who tested their code using modern tools and techniques
 should not have to pay for bugs they didn't write.
 
 #### Log-And-Continue Enforcement Strategy
 
 The program can emit a run-time diagnostic regarding the contract violation
-and then continue past the assertion. This is not ideal:
+and then continue past the bug.
+
+Advantages:
+
+* Defective legacy programs in production can continue to function.
+* Developers gain feedback helpful in addressing defects.
+
+Disadvantages:
 
 * Code size may increase considerably.
-* It involves relying — for logging purposes — on a program which exhibits UB.
+* Sanitizers may not support this strategy.
+* It involves relying on a program which exhibits UB.
 
 Nevertheless, it is a popular choice in some domains
-where the cost of terminating a program is great
+where the cost of fixing or terminating a program is great
 and the risk of continuing with undefined behaviour is low.
+Some optimisations assume software is free of Unambiguous Bugs.
+It is unwise to enable these optimisations in such domains.
 
 ### Enforcement Profiles
 
-The domain of the program greatly affects preferred Unambiguous Bug Strategies.
+Now that we have established some Unambiguous Bug Strategies,
+how do we choose between them?
+This depends on the domain in which the program is operating.
 
 #### Tester
 
 Somebody who is testing the program, e.g.
 
-* a developer investigating a bug,
+* a developer iterating on a feature or investigating a bug,
 * a QA/test engineer, or
 * a DevOps engineer programming a CI runner to perform automated tests
 
@@ -362,15 +383,17 @@ and performance and stability are secondary concerns.
 
 #### Safety-Critical System With Redundancy
 
-A safety-critical system *with* backup/redundancy will also prefer Trap Enforcement
-Strategy because knowingly allowing the program to continue in an incorrect state
+A safety-critical system *with* backup/redundancy
+will also prefer Trap Enforcement Strategy
+because allowing the program to continue in an incorrect state
 is an unacceptable risk.
 Examples include life-support systems and autonomous vehicle controllers.
 
 #### Safety-Critical System Without Redundancy
 
 A safety-critical system *without* backup/redundancy
-may prefer Log-And-Continue Enforcement Strategy.
+may prefer Prevention Enforcement Strategy
+or Log-And-Continue Enforcement Strategy.
 
 #### Performance-Critical/Resource-Constrained
 
