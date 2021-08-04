@@ -63,7 +63,7 @@ Firstly, it's simpler to focus in on one side of the contract.
 Secondly, the user is typically the less experienced and more error-prone of
 the two parties. Therefore, violation by the user is more common.
 
-For example, in the case of the Toolchain Contract (below),
+For example, in the case of the ISO C++ Standard (below),
 the toolchain provider is far less likely to be the cause of a contract
 violation by virtue of the significant rigour, effort and feedback poured into such
 tools.
@@ -118,18 +118,6 @@ A typical language specification for a C++ program is a revision of
 
 Note: the ISO C++ Standard also diagnoses violation by user at compile time.
 However, the focus of this document is run-time disappointment.
-
-#### Toolchain Contract
-
-* agreement: toolchain documentation including portions of the ISO C++ Standard
-  identified as [implementation-defined behavior](https://eel.is/c++draft/defns.impl.defined)
-* provider: implementer of the language and its accompanying libraries
-* user: the program developer
-* violation by user: implementation-specific
-
-Note: being comprised of one or more programs,
-the toolchain also has its own End User Contract
-which is specified, in part, by the ISO C++ Standard.
 
 #### C++ API Contract
 
@@ -200,7 +188,7 @@ are *not* a violation of the Test User Contract.
 * agreement: documentation of dynamic analysis tools and/or sanitizers
 * provider:
   * analysis tool providers whose tools flag violations — especially of the
-    ISO C++ Standard and Toolchain Contract, or
+    ISO C++ Standard, or
   * C++ API Contract providers who are encouraged to assert that their APIs are used
     correctly.
 * user: an engineer who may be some combination of
