@@ -368,7 +368,8 @@ It is unwise to enable these optimisations in such domains.
 
 Now that we have established some Unambiguous Bug Strategies,
 how do we choose between them?
-This depends on the domain in which the program is operating.
+We can use examples of C++ programs built for different domains
+to speculate on which strategies are best suited to different conditions.
 
 #### Tester
 
@@ -400,8 +401,8 @@ or Log-And-Continue Enforcement Strategy.
 Applications which are performance-critical or resource-constrained
 may favour Prevention Enforcement Strategy.
 
-Example applications include interactive entertainment software, scientific simulations
-and embedded controllers.
+Example applications include interactive entertainment software, scientific simulations,
+embedded controllers, machine learning and image processing.
 
 #### Business-Critical Systems
 
