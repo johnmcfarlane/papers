@@ -300,17 +300,55 @@ Because of these advantages, trapping makes a good default strategy.
 This is the default chosen by [the `assert` macro](https://en.cppreference.com/w/cpp/error/assert)
 and by most sanitizers.
 
-#### Prevention Enforcement Strategy
+#### Nonenforcement Strategy
 
-The program can assume that defects have been eliminated.
-Assuming bugs do not occur, no assert expression will ever be false.
-This means that instrumentation is unnecessary
-and assert statements behave as if they are not there:
+The program continues past the bug, effectively ignoring the contract violation.
+For ISO C++ Standard contract violations, neither optimisation nor instrumentation
+is enabled.
+For C++ API Contract violations, assert statements behave as if they are not there:
 
 ```c++
 #define ASSERT(condition) ((void)0)
 ```
 
+Advantages:
+
+* Legacy programs in production can continue to function as before.
+* Lack of run-time checking leads to a fairly lean binary.
+
+Disadvantages:
+
+* Tools have limited ability to identify bugs
+  because contract violation is effectively normalised.
+* Any violation means the program exhibits UB.
+* It is unsafe for the compiler to assume the contract is not violated.
+
+Nevertheless, it is a popular choice in some domains
+where the cost of fixing or terminating a program is great
+and the risk of continuing with undefined behaviour is low.
+
+Some optimisations assume software is free from Unambiguous Bugs.
+It is unwise to enable any such optimisations in a program which
+applies this strategy to any contract violation.
+
+#### Log-And-Continue Strategy
+
+Additional to the Nonenforcement Strategy, the program can emit a run-time diagnostic.
+
+Advantages:
+
+* Developers can gain feedback helpful in addressing defects.
+
+Disadvantages:
+
+* The disadvantages of the Nonenforcement Strategy apply.
+* Diagnostics may increase code size considerably.
+
+#### Prevention Enforcement Strategy
+
+The program can assume that defects have been eliminated.
+Assuming bugs do not occur, no contract check will fail,
+so no such check is required at run-time.
 Further, users can communicate this assumption to the compiler
 in the form of optimisation flags.
 
@@ -331,45 +369,21 @@ Disadvantages:
 * Developers must first test their code thoroughly
   using the Trap Enforcement Strategy and
   taking full advantage of the Test User Contract.
-* Developers who instead choose to optimise defective code will see
+* Developers who skip thorough testing but still enable optimisations may see
   pronounced deterioration in the behaviour of their program.
 
 Concerns about this deterioration are raised in ([P2064R0](https://wg21.link/p2064r0))
 suggesting than an alarming amount of defective code reaches production
-without first being tested using the trap strategy.
+without first being tested using the Trap Enforcement Strategy.
 It is always unwise to release software that contains undefined behaviour.
 Optimising such programs only throws fuel on an already-lit fire.
-Meanwhile, authors who tested their code using modern tools and techniques
-should not have to pay for bugs they didn't write.
-
-#### Log-And-Continue Enforcement Strategy
-
-The program can emit a run-time diagnostic regarding the contract violation
-and then continue past the bug.
-
-Advantages:
-
-* Defective legacy programs in production can continue to function.
-* Developers gain feedback helpful in addressing defects.
-
-Disadvantages:
-
-* Code size may increase considerably.
-* Sanitizers may not support this strategy.
-* It involves relying on a program which exhibits UB.
-
-Nevertheless, it is a popular choice in some domains
-where the cost of fixing or terminating a program is great
-and the risk of continuing with undefined behaviour is low.
-Some optimisations assume software is free of Unambiguous Bugs.
-It is unwise to enable these optimisations in such domains.
 
 ### Enforcement Profiles
 
 Now that we have established some Unambiguous Bug Strategies,
 how do we choose between them?
 We can use examples of C++ programs built for different domains
-to speculate on which strategies are best suited to different conditions.
+to speculate on which strategies are best suited to different situations.
 
 #### Tester
 
@@ -379,7 +393,7 @@ Somebody who is testing the program, e.g.
 * a QA/test engineer, or
 * a DevOps engineer programming a CI runner to perform automated tests
 
-will all prefer Trap Enforcement Strategy because bugs are a likelihood
+will prefer Trap Enforcement Strategy because bugs are a likelihood
 and performance and stability are secondary concerns.
 
 #### Safety-Critical System With Redundancy
@@ -393,31 +407,51 @@ Examples include life-support systems and autonomous vehicle controllers.
 #### Safety-Critical System Without Redundancy
 
 A safety-critical system *without* backup/redundancy
-may prefer Prevention Enforcement Strategy
-or Log-And-Continue Enforcement Strategy.
+might consider Prevention Enforcement Strategy, or Log-And-Continue Strategy.
+
+However, logging may not be viable for some safety-critical embedded controllers.
+Such minimal systems may not have the facility to log errors or to off-board them.
+
+And despite thorough testing, doubts regarding Unambiguous Bugs may linger.
+Optimisations which assume fulfilment of contract violations
+may represent a small — but unnecessary — risk.
+
+Thus, Nonenforcement Strategy or Log-And-Continue Strategy are preferable.
 
 #### Performance-Critical/Resource-Constrained
 
 Applications which are performance-critical or resource-constrained
 may favour Prevention Enforcement Strategy.
 
-Example applications include interactive entertainment software, scientific simulations,
-embedded controllers, machine learning and image processing.
+Applications include
+
+* embedded controllers,
+* high-frequency trading,
+* image processing,
+* interactive entertainment,
+* machine learning, and
+* scientific simulation.
 
 #### Business-Critical Systems
 
 Where business interests are at stake but user safety is not,
-either the Trap Enforcement Strategy or Log-And-Continue Enforcement Strategy
-may be preferable.
-A RESTful server which persists between requests may eventually identify bad state
-that has lain unnoticed for a while.
+the program developer has leeway to choose from a wider range of strategies.
+If they are prepared to perform thorough testing, the Prevention Enforcement Strategy
+will reap financial benefits in terms of compute costs and reliability.
+
+But where competing financial concerns limit the effort put into defect prevention
+either the Trap Enforcement Strategy or The Log-And-Continue Strategy may be preferable.
+
+For example, a RESTful server which persists between requests
+may eventually identify bad state that has lain unnoticed for a while.
 The developer can choose what happens on discovery:
 
-* Kill the process and restart it in the hope that the problem goes away for a while.
+* Kill the process and restart it in the hope that the problem is mitigated.
 * 'Soldier on' and hope the problem doesn't cause some catastrophe or other.
 
 This choice will be affected by factors such as the scale of the fleet,
 exposure to malicious agents and the cost of incorrect behaviour.
+Either way, bugs should not go unnoticed.
 
 ## Handling Errors
 
