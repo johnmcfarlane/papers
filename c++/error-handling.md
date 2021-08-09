@@ -459,6 +459,7 @@ The End User Contract provider must account for user contract violations.
 In other words, the program must handle errors.
 
 Unfortunately, this is not a straightforward task.
+A wide variety of contrasting and conflicting error-handling approaches are available.
 Section 2 of [P0709R4, Zero-overhead Deterministic Exceptions: Throwing values](https://wg21.link/p0709r4),
 "Why do something: Problem description, and root causes"
 does a good job of describing the C++ error-handling landscape.
@@ -467,18 +468,20 @@ does a good job of describing the C++ error-handling landscape.
 
 Having identified the subset of disappointment that counts as errors,
 the problem remains: how to deliver the bad news to the user.
-The signal must often travel across large sections of the code
-and different types of programs and components affect the method of delivery.
+This news must often travel across large sections of the code.
+As with bugs, Enforcement Profiles affect the choice of solution.
+Additionally, the choice of error handling technique is affected
+by other prominent features of the code...
 
 #### Batch Processing
 
 The simplest kind of code involves a finite amount of processing and no user interaction.
-All flow control can be expressed within a simple call graph
-and all results — disappointing or otherwise — can be delivered on completion.
+Flow of information typically follows flow of control within a call graph
+and results — disappointing or otherwise — can be returned on completion.
 
 Entire programs can be written this way.
 Diagnostic messages can be emitted at the point where the error is first detected.
-And only a failure code is returned by the `main` function.
+And only a failure code need be returned by the `main` function.
 
 #### Realtime Processing
 
@@ -491,9 +494,9 @@ During this phase, they behave like a batch process, and
 can exit if inputs are ill-formed.
 
 However, once the initialisation phase is ended,
-realtime phase — sometimes called the 'main loop' — is entered.
+the realtime phase — sometimes called the 'main loop' — is entered.
 During the this phase, a realtime program, cannot simply exit on error.
-It must do what they can to convey disappointment to the user and carry on.
+It must do what it can to convey disappointment to the user and carry on.
 
 #### Libraries
 
@@ -501,20 +504,26 @@ Libraries add a new dimension. A library might be used across many programs.
 Some of those programs might be batch and some might be realtime.
 Thus, either the applicability, or the choice of error-handling strategy is limited.
 
+#### Multithreading
+
+The addition of threads to a program makes matters worse.
+Now there may be concurrent initialisation phases and realtime phases.
+
 ### Error Handling Techniques
 
-Now that the different types of terrain are established,
+Now that a flavour of the different types of terrain are established,
 techniques can be evaluated based on how well they cover different terrains.
 
 #### Diagnostics
 
-While not related to control flow or to communication back to an external process,
+While not directly related to sending disappointment back to an external process,
 the logging or display of detailed error messages to the user is very important.
-A clear message in human-readable form is what the user needs to fix most errors.
+A clear message in human-readable form is what the user needs
+in order to fix most errors.
 
 In an interactive program, this may be presented in the form of a dialogue box,
 an output window or a status bar.
-Otherwise, logging/console output is the medium through which the users is reached.
+Elsewhere, logging/console output is the medium through which the users is reached.
 Printing a message to the error stream is usually adequate.
 
 ```c++
@@ -524,7 +533,7 @@ std::cerr << std::format("failed to open file, \"{}\"\n", filename);
 If the program can carry on past this line of code as normal,
 what we are dealing with probably isn't an error at all.
 If this is an error, typical control flow will be dramatically altered
-and further choices will need to be made...
+and further choices will need to be made irrespective of any diagnostics...
 
 #### Return Values
 
@@ -535,7 +544,7 @@ a method for sending news of failure back to the calling process.
 // print file's size or return false
 auto file_size(char const* filename)
 {
-  std::ifstream in(filename);
+  std::ifstream in(filename, std::ios::binary | std::ios::ate);
   if (!in) {
     std::cerr << std::format("failed to open file \"{}\"\n", filename);
     return false;
@@ -565,18 +574,23 @@ auto config_file_size()
 ```
 
 A problem arises if the function already returns a result.
+C++ functions only return one object
+and the most readable functions return the desired result as that object
+(e.g. file size as an integer).
 
 ```c++
-// how is disappointment reported now?
+// return file's size
 auto file_size(char const* filename)
 {
-  std::ifstream in(filename);
+  std::ifstream in(filename, std::ios::binary | std::ios::ate);
+  if (!in) {
+    std::cerr << std::format("failed to open file \"{}\"\n", filename);
+    // how is the disappointment returned now?
+  }
+
   return in.tellg();
 }
 ```
-
-C++ functions only return one object
-and the most readable functions return the desired result as that object.
 
 To some degree or other, types such as `expected`, `outcome` and `optional` facilitate
 returning of both the desired result combined with the successfulness:
@@ -585,7 +599,7 @@ returning of both the desired result combined with the successfulness:
 auto file_size(char const* filename)
 -> std::optional<std::ifstream::pos_type>
 {
-  std::ifstream in(filename);
+  std::ifstream in(filename, std::ios::binary | std::ios::ate);
   if (!in) {
     std::cerr << std::format("failed to open file \"{}\"\n", filename);
     return std::nullopt;
@@ -605,9 +619,10 @@ where there is high confidence that throwing is rare.
 Exceptions are also a flexible solution which allows error handling code to be localised
 within the call graph: imagine a program which needs to report defects differently
 in separate sections of the code. In one section, errors are logged to a file. In
-another section, errors are reported to a bug-tracking server. And in both sections,
-the program is not allowed to access any IO. Such constraints can be easily overcome
-with just a couple of `catch` blocks.
+another section, errors are reported to a bug-tracking server.
+And in both sections, the program is not allowed to access any IO,
+so emitting a diagnostic at moment of initial disappointment isn't possible.
+Such constraints can be easily overcome with one or two `catch` blocks.
 
 However, such versatility is rarely necessary in real applications. And exceptions
 bring other costs.
@@ -648,16 +663,16 @@ Usage couldn't be much simpler:
   }
 ```
 
-Abnormal program termination is often discouraged in C++ programs.
+Abnormal program termination is often shunned in C++ programs.
 The main reason is that it typically bypasses destructors.
 That may not be the biggest worry in a program which is already in a bad
-state, so terminating in reaction to contract violations is relatively palatable.
+state, so terminating in reaction to Unambiguous Bugs is relatively palatable.
 And destructors in a modern, well designed system are only important
 while the process is running:
 memory, file descriptors and peripherals should all be freed up by the system
 once the owning process is ended.
 
-So with caveats, this can be the best approach for reacting to violations of the
+So this can often be the best approach for reacting to violations of the
 End User Contract — as well as to Unambiguous Bugs. In profile,
 Safety-Critical System With Redundancy, the requirement to 'fail fast' can be well
 served by this approach. And in profile, Business-Critical Systems, the concerns
@@ -671,6 +686,9 @@ Reliance on this filesystem might be a given. In such a circumstance,
 why not simply assume that the filesystem is there? Why not treat its absence
 as if it were undefined behaviour?
 
+In other words, why not apply the Prevention Enforcement Strategy to errors?
+Why not assume that the End User Contract is never violated?
+
 This is entirely possible but the implications must be fully understood.
 There will be reduced freedom to invoke the program with ill-formed input.
 There is heightened risk of compromise, corruption or critical failure if the
@@ -678,6 +696,9 @@ program is ever invoked outside the parameters of the End User Contract.
 Even when it is possible, it is rarely worthwhile taking this risk.
 
 ## C++ API Author Strategies
+
+We will briefly explore some ways to design our C++ API Contracts
+so they are set up for success.
 
 ### The Pit of False Security
 
@@ -688,12 +709,12 @@ Defending against failure by allowing the caller to proceed as normal is unhelpf
 Example 1:
 
 ```c++
-auto load_file(string filename)
+auto load_file(std::string filename) -> std::vector<std::byte>
 {
-  ifstream file{filename};
+  std::ifstream file{filename};
   if (!file) {
     // bad! missing is not the same as empty
-    return vector<byte>{};
+    return std::vector<std::byte>{};
   }
   ...
 }
@@ -702,7 +723,7 @@ auto load_file(string filename)
 Example 2:
 
 ```c++
-auto pull_away(color traffic_light)
+auto car::pull_away(color traffic_light)
 {
   switch (traffic_light) {
     case color::red:
@@ -729,18 +750,18 @@ There are two main solutions to this kind of anti-pattern.
 
 ### Disappointment By Type
 
-The best documentation is the API itself, starting with good naming.
+The best documentation is the API itself.
 In a strongly-typed language, the types of a declaration are a powerful form of communication.
 
 Example 1 revisited:
 
 ```c++
-auto load_file(string filename) -> optional<vector<byte>>
+auto load_file(std::string filename) -> std::optional<std::vector<std::byte>>
 {
-  ifstream file{filename};
+  std::ifstream file{filename};
   if (!file) {
     // better; user is made aware that the result isn't always some bytes
-    return nullopt;
+    return std::nullopt;
   }
   ...
 }
@@ -776,32 +797,9 @@ auto pull_away(color traffic_light)
 }
 ```
 
-Note that the provider might be tempted to add a `default` clause to the switch statement.
+Note that the provider might be tempted to place the assertion in a `default` clause.
 This is not advised. There is no acceptable default behaviour here
 so it's better not to express the intent that there is.
-
-Example 2 mis-corrected:
-
-```c++
-// precondition: traffic_light must be red, amber or green
-auto pull_away(color traffic_light)
-{
-  switch (traffic_light) {
-    case color::red:
-      return false;
-    case color::amber:
-      return false;
-    case color::green:
-      return true;
-    default:
-      // worse; there are no more alternatives so why imply that there are?
-
-      // What if someone adds enumerator, color::blue?
-      // The compiler would not complain that there is no "case color::blue".
-      assert(false);
-  }
-}
-```
 
 ## Example Program
 
@@ -821,15 +819,17 @@ constexpr void eg_assert(bool condition)
     return;
   }
 
-#if defined(LOG_AND_CONTINUE_STRATEGY)
-  fmt::print(stderr, "a C++ API violation occurred\n");
-#elif defined(TRAP_STRATEGY)
+#if defined(TRAP_STRATEGY) // Trap Enforcement Strategy
+  // stop the program
   std::terminate();
-#elif defined(PREVENTION_STRATEGY)
-  // Just-about anything can go here as it will never be reached.
-  // All Enforcement Profiles should assume this line isn't reached.
-  // Further, the Performance-Critical/Resource-Constrained profile
-  // may wish to hint to the compiler, e.g. with __builtin_unreachable().
+#elif defined(NONENFORCEMENT_STRATEGY) // Nonenforcement Strategy
+  // do nothing
+#elif defined(LOG_AND_CONTINUE_STRATEGY) // Log-And-Continue Strategy
+  // print a helpful diagnostic
+  std::fputs("a C++ API violation occurred\n", stderr);
+#elif defined(PREVENTION_STRATEGY) // Prevention Enforcement Strategy
+  // make it very clear that the program must not reach this line
+  __builtin_unreachable();
 #else
 #error
 #endif
@@ -863,13 +863,13 @@ The contract is composed of conditions.
 Some conditions can be formally expressed.
 Some of those conditions can be expressed in the code itself.
 Some languages support formal expression as part of the interface.
-Many languages support expression of conditions within the implementation.
+Many languages support expression of conditions within the API implementation.
 
 The `eg_assert` invocations above are examples of expressions within the implementation.
 
 ### Calling a C++ API
 
-In general, C++ APIs should not attempt to handle out-of-contract usage.
+In general, C++ APIs should not attempt to handle out-of-contract invocation.
 As with the `pull_away` example above, normalising bugs has many negative consequences.
 The set of possible violations is likely to be vast
 so logic to deal with it can dilute the essential code of a function.
@@ -884,15 +884,15 @@ void sanitized_run(int number)
 }
 ```
 
-with respect to `number` is no different to that of `number_to_letter`;
-they both require the same range of values.
+with respect to `number` is no different to that of `number_to_letter`.
+They both require the same range of values.
 So even an assertion is of little value here.
 
 ### Validating Input
 
-Code which ushers external input into the program is a very different matter.
+Code which accepts external input into the program is a very different matter.
 
-The program's developer(s) cannot assume that its input is error-free.
+The developer shouldn't assume that program input is error-free.
 Even if the users of the program are 'friendly', they may make mistakes which the
 program developer did not anticipate.
 
@@ -956,7 +956,7 @@ auto unsanitized_run(std::span<char*> args)
 
 In contrast with `sanitized_run`, `unsanitized_run` does a lot of validating of data
 and little else.
-It may be difficult to determine until quite far in the process whether input is
+It can be difficult to determine until quite far in the process whether input is
 well-formed. But as a general rule, it is better to fail fast.
 
 This can be seen as analogous to digestion:
@@ -965,9 +965,9 @@ and if anything remains, it is accepted into the organism and processed.
 The sooner poisons are rejected, the less harm they can do.
 
 Because of the effort involved in validating input, it is highly recommended
-that developers leverage 3rd-party libraries designed for this purpose.
+that developers leverage mature, 3rd-party libraries designed for this purpose.
 Command-line argument parsers such as [Lyra](https://github.com/bfgroup/Lyra)
-could be used to replace most of `unsanitized_run`.
+can be used to replace most of `unsanitized_run`.
 Libraries that handle data interchange formats can also save effort and reduce risk.
 
 However, application-agnostic libraries
@@ -977,10 +977,7 @@ For example, the range check of `number` in `unsanitized_run` must still be perf
 
 ### Type Safety is King
 
-As if it needed repeating, the best time to prevent problems is early.
-To that end, the program developer must use the type system to their advantage.
-Well written APIs mean that most bugs do not survive compilation.
-
+Well-written APIs mean that most bugs do not survive compilation.
 Here we see `std::span` used to encapsulate the program's implicitly-bound input
 parameters.
 
@@ -1028,14 +1025,14 @@ constexpr auto number_to_letter(int number)
 
 It so happens that we can see the definition of `number_to_letter`. Even if we couldn't,
 we might feel confident in guessing roughly how it was implemented.
-And (assertions aside) we might feel confident to say that the function does not
+And we might feel confident to say that the function does not
 exhibit undefined behaviour — even when the precondition is violated.
 
 This is categorically false.
 
-Firstly, the author has effectively limited the warranty of the contract.
-They are declining to make a guarantee about what the result of the call will be
-in the event of contract violation. Put another way, they decline to define the behaviour.
+Firstly, the author has intentionally limited the 'warranty' of the contract.
+They are declining to guarantee the result in the event of contract violation.
+Put another way, they decline to define the behaviour.
 
 Secondly, the provider is under no obligation
 to have tested the behaviour outside of contract.
@@ -1045,13 +1042,13 @@ And in the absence of testing, it's easy to miss a failure case,
 [e.g.](https://godbolt.org/z/5e3cvj95f):
 
 ```c++
-// signed integer overflow resulting in ISO C++ Standard UB
+// signed integer overflow violates ISO C++ Standard; incurs UB
 number_to_letter(0x7fffffff);
 ```
 
 Finally, the provider reserves the right to change the implementation as they choose.
 Assumptions drawn from the original definition are already false.
-But they become yet more dangerous if applied to a new definition. For example:
+But they become yet more dangerous when applied to a new definition. For example:
 
 ```c++
 constexpr auto number_to_letter(int number)
@@ -1064,7 +1061,8 @@ constexpr auto number_to_letter(int number)
 It is easy to become distracted by the wonders of modern compilers.
 They are able to generate highly optimised code, by assuming contract fulfilment.
 But at the end of the day, they are not magic and nor is undefined behaviour.
-UB is just a way for authors to limit contracts so that providers can deliver more.
+UB is just a way for authors to limit contracts so that providers can deliver
+better implementations.
 
 ### Wide Or Narrow?
 
@@ -1090,7 +1088,7 @@ The code is now likely to be slower to comprehend, to compile and to execute.
 The API is more difficult to use and the user is encouraged to deal at run-time
 with bugs which should simply have been removed.
 In general, wide contracts are the wrong choice for components of any
-fully-digital automated system.
+fully-digital, automated system.
 
 But when a human is in the loop, a wide contract is an essential UI feature.
 Humans often require feedback in order to identify mistakes.
@@ -1106,15 +1104,16 @@ the contract author impedes the engineer's ability to identify bugs.
 
 ### Don't Optimize Until You Sanitize
 
-C++ toolchains increasingly optimise programs assuming that they are correct.
-Optimisations are not free. They demand strict adherence to contracts.
+C++ toolchains increasingly optimise programs by assuming their correctness.
+These optimisations are not free.
+They are provided to users in exchange for not violating the ISO C++ Standard.
 
 Historically, such contract violations have been difficult to detect.
 Fortunately, modern toolchains provide facilities for their detection.
 These include dynamic analysis tools known as sanitizers
 which instrument code to test for bugs at run-time.
-The beauty of undefined behaviour is that it allows this — and every other valid
-bug-hunting tool — to be used in conforming code.
+The main benefit of undefined behaviour is that it allows such tools
+to accurately identify bugs.
 
 Meanwhile, modern software development practices emphasise automated testing regimes.
 It is not uncommon for most of the APIs in a program
@@ -1124,27 +1123,28 @@ Such tests are an opportunity to enable sanitizers.
 If you wish to enable compiler optimisations in the program you provide to users
 you are strongly advised to ***test your program code with sanitizers***.
 Combined with the approaches detailed in this document, this will lead to significantly
-less defective software without the need to compromise safety or performance.
+fewer software defects without the need to compromise safety or performance.
 
-If your toolchain provider doesn't provide sanitizers in its latests products,
-question whether it is of suitable quality. The author's experience is that some
-tools which are certified for use in safety-critical software are geared towards
-methodologies which predate the era of test-driven development.
-They are successful because they reduce insurance premiums for software developers
-whose practices have not improved in decades.
-However, they are part of an ecosystem that increasingly neglects the safety of end-users.
+If your toolchain provider doesn't offer sanitizers in its latests products,
+question whether it is of suitable quality.
+
+Notably, the author's experience is that many tools which are certified for use with
+safety-critical software are often outdated versions of free open-source software,
+lacking years' worth of new features and fixes.
+They rely on a business model which predates modern software practices —
+such as incremental releases, regression testing and test-driven development.
+They tend to deliver substandard products as a consequence.
+
+As a professional, you must decide whether they are acceptable for the task at hand.
 
 ### Use All the Tools
 
 As well as enabling sanitizers and static analysers and elevating compiler warnings,
 using multiple toolchains will increase the range of bugs for which you test.
 Even if your target compiler does not have those facilities, some (though not all)
-bugs will be detected by testing your software on x86-64 production system using
+bugs will be detected by testing your software on consumer-grade system using
 free operating systems and toolchains, or in emulators that more closely resemble
 the target platform.
-
-The prevalence of low-quality toolchains in safety-critical and embedded domains
-is no excuse for doing nothing.
 
 ### Don't Rely on Sanitizers Alone
 
@@ -1186,7 +1186,8 @@ is helpful for developing correct, safe code — provided it is tested for.
 
 In short:
 
-* You can choose bug handling strategy easily, change your mind or use different
+* Use assertions to formally express C++ API Contracts.
+* Then, you can easily choose a bug handling strategy, change your mind, or use different
   strategies in different builds.
 * But you cannot so easily change error-handling strategies.
 * Sometimes, a bug in a program isn't a bug, it's an error. This happens as part
