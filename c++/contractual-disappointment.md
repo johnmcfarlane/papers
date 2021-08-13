@@ -1,5 +1,7 @@
 # Contractual Disappointment in C++
 
+Reply-to: John McFarlane <[sg21@john.mcfarlane.name](mailto:sg21@john.mcfarlane.name)>
+
 > "Oh who can say how subtle and safe one feels" (John Betjeman, False Security)
 
 This document offers advice on writing robust programs in C++.
@@ -7,7 +9,7 @@ It draws on personal experience in domains including interactive entertainment,
 large-scale server systems, and safety-critical devices.
 
 Contracts and their consequences are the main tool used here to frame run-time failure.
-Through the lens of contracts I attempt to show that careful use of contracts
+Through their lens I attempt to show that careful understanding of interfaces
 is the most effective way to ensure usability, efficiency *and* reliability.
 
 ## Introduction
@@ -224,7 +226,7 @@ Examples of contract trapping techniques that are commonly employed are
 * API contract violation tests (e.g. assertions, pre-conditions and post-conditions),
 * API contract fulfilment tests (e.g. unit tests), and
 * ISO C++ Standard contracts (e.g. by enabling sanitizers
-  and flags such as `_GLIBCXX_DEBUG` and `_ITERATOR_DEBUG_LEVEL`).
+  and flags such as `_GLIBCXX_ASSERTIONS` and `_ITERATOR_DEBUG_LEVEL`).
 
 ### Types of Contract Violation
 
@@ -1013,7 +1015,7 @@ auto main(int argc, char* argv[]) -> int
 
 ## Discussion
 
-### API Contract Violation is Undefined Behaviour
+### C++ API Contract Violation is Undefined Behaviour
 
 It is a common misconception that the term _undefined behaviour_
 refers only to violations of some subset of the ISO C++ Standard.
@@ -1430,7 +1432,8 @@ and the contracts they affect, are both required to successfully handle disappoi
   </tr>
 
   <tr>
-    <td><i>-O</i>, <i>-O1</i>, <i>-O2</i>, <i>-O3</i>, <i>-Os</i>, <i>-Ofast</i> or <i>-Og</i></td>
+    <td><i>-O</i>, <i>-O1</i>, <i>-O2</i>, <i>-O3</i>, <i>-Os</i>, <i>-Ofast</i>
+or <i>-Og</i></td>
     <td>✓</td>
     <td>✓</td>
     <td></td>
