@@ -32,9 +32,12 @@ makes clear the distinction between errors and bugs:
 * A _bug_ is the violation of a C++ API Contract or the ISO C++ Standard.
 * An _error_, is when an interface couldn’t do what it advertised.
 
-Note: a third category, _abstract machine corruption_ is identified by P0709R4,
+A third category, _abstract machine corruption_, is identified by P0709R4,
 which includes heap exhaustion and stack overflow.
-But it relates less to contracts involving C++ program developers.
+These are special cases of disappointment which may be caused by bugs,
+e.g. memory leaks and infinite recursion respectively.
+Alternatively, they may be errors,
+e.g. a program executed on a system with inadequate resources.
 
 There is one time when the bug versus error distinction breaks down.
 That is when considering the Test User Contract.
