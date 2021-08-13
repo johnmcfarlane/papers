@@ -44,6 +44,21 @@ That is when considering the Test User Contract.
 When testing for contract violations,
 the user wishes for bugs to be treated as errors.
 
+### Vulnerability
+
+While not a specific concern of this this document,
+security depends upon successful handling of disappointment.
+
+[NIST SP 500-268, Source Code Security Analysis Tool Function Specification Version 1.1](https://doi.org/10.6028/NIST.SP.500-268v1.1),
+states that a security failure is caused by vulnerabilities.
+Applying the terminology of NIST SP 500-268 to this document:
+
+* Failure is a source of disappointment.
+* An implementation vulnerability is a bug.
+* An operation vulnerability is an error.
+
+Thus, this document is pertinent to the subject of security.
+
 ## Contracts
 
 ### Contract Attributes
