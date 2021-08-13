@@ -1223,30 +1223,41 @@ and guidance.
 
 ## Appendix A - Toolchain-Specific Recommendations
 
-This section suggests some compiler options which can be used
-to help enforce the four Unambiguous Bug Strategies
+This section introduces some of the toolchain-supported features
+which can be used to help enforce the Unambiguous Bug Strategies
 
 * **Trap** Enforcement Strategy,
 * **Non**enforcement Strategy,
 * **Log**-And-Continue Strategy, and
-* **Prevent**ion Enforcement Strategy,
+* **Pre**vention Enforcement Strategy,
 
 using three popular compilers:
 
-* GCC,
-* Clang, ang
+* Clang,
+* GCC, and
 * MSVC.
+
+To some extent, different strategies can be applied to different bugs
+within the same build of a program.
+For example, the developer may wish to trap C++ API Contract violations
+but prevent ISO C++ Standard violations.
+Or they may wish to prevent all user contract violations with the sole
+exception of signed integer overflow.
+
+Regardless, this guide is only an example of the choices available in modern toolchains.
+A clear understanding of the interplay between the features of your individual toolchain,
+and the contracts they affect, are both required to successfully handle disappointment.
 
 <table>
   <tr>
     <td><b><i>flag</i> or <code>intrinsic</code></b></td>
-    <td><b>GCC</b></td>
     <td><b>Clang</b></td>
+    <td><b>GCC</b></td>
     <td><b>MSVC</b></td>
     <td><b>Trap</b></td>
     <td><b>Non</b></td>
     <td><b>Log</b></td>
-    <td><b>Prevent</b></td>
+    <td><b>Pre</b></td>
     <td><b>Description</b></td>
   </tr>
 
@@ -1275,7 +1286,7 @@ using three popular compilers:
   </tr>
 
   <tr>
-    <td><i>-Wall</i>, <i>-Wextra</i>, <i>-Wpedantic</i></td>
+    <td><i>-Wall</i>, <i>-Wextra</i> and <i>-Wpedantic</i></td>
     <td>✓</td>
     <td>✓</td>
     <td></td>
@@ -1311,9 +1322,21 @@ using three popular compilers:
   </tr>
 
   <tr>
-    <td><i>-D_GLIBCXX_ASSERTIONS</i></td>
+    <td><i>-fwrapv</i></td>
+    <td>✓</td>
     <td>✓</td>
     <td></td>
+    <td>✓</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td>trap signed integer overflow</td>
+  </tr>
+
+  <tr>
+    <td><i>-D_GLIBCXX_ASSERTIONS</i></td>
+    <td></td>
+    <td>✓</td>
     <td></td>
     <td>✓</td>
     <td></td>
@@ -1331,7 +1354,7 @@ using three popular compilers:
     <td></td>
     <td></td>
     <td></td>
-    <td>enable Standard Library precondition checks</td>
+    <td>trap Standard Library user contract violations</td>
   </tr>
 
   <tr>
@@ -1407,7 +1430,7 @@ using three popular compilers:
   </tr>
 
   <tr>
-    <td><i>-O</i>, <i>-O1</i>, <i>-O2</i>, <i>-O3</i>, <i>-Os</i>, <i>-Ofast</i>, <i>-Og</i></td>
+    <td><i>-O</i>, <i>-O1</i>, <i>-O2</i>, <i>-O3</i>, <i>-Os</i>, <i>-Ofast</i> or <i>-Og</i></td>
     <td>✓</td>
     <td>✓</td>
     <td></td>
@@ -1419,7 +1442,7 @@ using three popular compilers:
   </tr>
 
   <tr>
-    <td><i>/O1</i>, <i>/O2</i>, <i>/Os</i>, <i>/Ot</i>, <i>/Ox</i></td>
+    <td><i>/O1</i>, <i>/O2</i>, <i>/Os</i>, <i>/Ot</i> or <i>/Ox</i></td>
     <td></td>
     <td></td>
     <td>✓</td>
@@ -1435,11 +1458,14 @@ using three popular compilers:
 Notes:
 
 † Use sanitizer flags ***in addition to*** optimisation flags
-to trap common occurrences of ISO C++ Standard user contract violations. Many more [Clang tools](https://clang.llvm.org/docs/index.html) are dedicated
+to trap common occurrences of ISO C++ Standard user contract violations.
+Additional [Clang sanitizers](https://clang.llvm.org/docs/index.html) are dedicated
 to catching bugs at run-time. Some of them work with GCC as well as Clang.
+Tools like Valgrind can also catch some of these bugs.
 
-‡ Must be used ***instead of*** explicit trapping code, and ***in conjunction with***
-sanitizers.
+‡ When used as part of the Trap Enforcement Strategy,
+must be used ***instead of*** explicit bug trapping code,
+and ***in conjunction with*** a sanitizer such as UBSan.
 
-&#42; Some optimisations may be safely enabled without affecting
-the behaviour of defective code, e.g. `-finline-functions` and `/Ob2`.
+&#42; Some optimisations may be safely enabled without further degrading
+behaviour of defective code, e.g. `-finline-functions` and `/Ob2`.
