@@ -1205,3 +1205,226 @@ In short:
 
 Thanks to Alicja Przybyś and Andrzej Krzemieński for much feedback, correction
 and guidance.
+
+## Appendix A - Toolchain-Specific Recommendations
+
+This section suggests some compiler options which can be used
+to help enforce the four Unambiguous Bug Strategies
+
+* **Trap** Enforcement Strategy,
+* **Non**enforcement Strategy,
+* **Log**-And-Continue Strategy, and
+* **Prevent**ion Enforcement Strategy,
+
+using three popular compilers:
+
+* GCC,
+* Clang, ang
+* MSVC.
+
+<table>
+  <tr>
+    <td><b><i>flag</i> or <code>intrinsic</code></b></td>
+    <td><b>GCC</b></td>
+    <td><b>Clang</b></td>
+    <td><b>MSVC</b></td>
+    <td><b>Trap</b></td>
+    <td><b>Non</b></td>
+    <td><b>Log</b></td>
+    <td><b>Prevent</b></td>
+    <td><b>Description</b></td>
+  </tr>
+
+  <tr>
+    <td><i>-Werror</i></td>
+    <td>✓</td>
+    <td>✓</td>
+    <td></td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>turn warnings into errors</td>
+  </tr>
+
+  <tr>
+    <td><i>/WX</i></td>
+    <td></td>
+    <td></td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>turn warnings into errors</td>
+  </tr>
+
+  <tr>
+    <td><i>-Wall</i>, <i>-Wextra</i>, <i>-Wpedantic</i></td>
+    <td>✓</td>
+    <td>✓</td>
+    <td></td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>enable many warnings</td>
+  </tr>
+
+  <tr>
+    <td><i>/W4</i></td>
+    <td></td>
+    <td></td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>enable many warnings</td>
+  </tr>
+
+  <tr>
+    <td><i>-fsanitize=undefined,address</i> etc.</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td></td>
+    <td>✓</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td>trap ISO C++ Standard user contract violations<sup>†</sup></td>
+  </tr>
+
+  <tr>
+    <td><i>-D_GLIBCXX_ASSERTIONS</i></td>
+    <td>✓</td>
+    <td></td>
+    <td></td>
+    <td>✓</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td>trap Standard Library user contract violations</td>
+  </tr>
+
+  <tr>
+    <td><i>/D_ITERATOR_DEBUG_LEVEL=2</i></td>
+    <td></td>
+    <td></td>
+    <td>✓</td>
+    <td>✓</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td>enable Standard Library precondition checks</td>
+  </tr>
+
+  <tr>
+    <td><code>__builtin_unreachable()</code></td>
+    <td>✓</td>
+    <td>✓</td>
+    <td></td>
+    <td>✓</td>
+    <td></td>
+    <td></td>
+    <td>✓</td>
+    <td>flag Unambiguous Bugs to compiler<sup>‡</sup></td>
+  </tr>
+
+  <tr>
+    <td><code>__assume(false)</code></td>
+    <td></td>
+    <td></td>
+    <td>✓</td>
+    <td>✓</td>
+    <td></td>
+    <td></td>
+    <td>✓</td>
+    <td>flag Unambiguous Bugs to compiler<sup>‡</sup></td>
+  </tr>
+
+  <tr>
+    <td><i>-DNDEBUG</i></td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td></td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>disable <code>assert</code> macro</td>
+  </tr>
+
+  <tr>
+    <td><i>-O0</i></td>
+    <td>✓</td>
+    <td>✓</td>
+    <td></td>
+    <td></td>
+    <td>✓</td>
+    <td>✓</td>
+    <td></td>
+    <td>disable optimisations<sup>&#42;</sup></td>
+  </tr>
+
+  <tr>
+    <td><i>/Od</i></td>
+    <td></td>
+    <td></td>
+    <td>✓</td>
+    <td></td>
+    <td>✓</td>
+    <td>✓</td>
+    <td></td>
+    <td>disable optimisations<sup>&#42;</sup></td>
+  </tr>
+
+  <tr>
+    <td><i>-fwrapv</i></td>
+    <td>✓</td>
+    <td>✓</td>
+    <td></td>
+    <td></td>
+    <td>✓</td>
+    <td>✓</td>
+    <td></td>
+    <td>disable signed integer overflow</td>
+  </tr>
+
+  <tr>
+    <td><i>-O</i>, <i>-O1</i>, <i>-O2</i>, <i>-O3</i>, <i>-Os</i>, <i>-Ofast</i>, <i>-Og</i></td>
+    <td>✓</td>
+    <td>✓</td>
+    <td></td>
+    <td>✓</td>
+    <td></td>
+    <td></td>
+    <td>✓</td>
+    <td>optimise code</td>
+  </tr>
+
+  <tr>
+    <td><i>/O1</i>, <i>/O2</i>, <i>/Os</i>, <i>/Ot</i>, <i>/Ox</i></td>
+    <td></td>
+    <td></td>
+    <td>✓</td>
+    <td>✓</td>
+    <td></td>
+    <td></td>
+    <td>✓</td>
+    <td>optimise code</td>
+  </tr>
+
+</table>
+
+Notes:
+
+† Use sanitizer flags ***in addition to*** optimisation flags
+to trap common occurrences of ISO C++ Standard user contract violations. Many more [Clang tools](https://clang.llvm.org/docs/index.html) are dedicated
+to catching bugs at run-time. Some of them work with GCC as well as Clang.
+
+‡ Must be used ***instead of*** explicit trapping code, and ***in conjunction with***
+sanitizers.
+
+&#42; Some optimisations may be safely enabled without affecting
+the behaviour of defective code, e.g. `-finline-functions` and `/Ob2`.
