@@ -291,8 +291,10 @@ constexpr auto a{1/0};
 
 ### Unambiguous Bug Strategies
 
-Broadly, there are three strategies that can be applied
+Broadly, there are four strategies that can be applied
 in situations where a violation might occur in a running program.
+They can be followed more effectively with help from modern toolchains.
+Examples of features used to deal with bugs can be found in Appendix A.
 
 #### Trap Enforcement Strategy
 
@@ -1036,6 +1038,8 @@ grants the user licence to infer a broader contract.
 Let's look again at the function `number_to_letter`.
 
 ```c++
+constexpr auto min_number{1};
+
 // precondition: number is in range [1..26]
 constexpr auto number_to_letter(int number)
 {
@@ -1062,7 +1066,7 @@ And in the absence of testing, it's easy to miss a failure case,
 [e.g.](https://godbolt.org/z/5e3cvj95f):
 
 ```c++
-// signed integer overflow violates ISO C++ Standard; incurs UB
+// signed integer overflow violates ISO C++ Standard, is already UB
 number_to_letter(0x7fffffff);
 ```
 
@@ -1171,11 +1175,11 @@ the target platform.
 Unfortunately, sanitizers are far from perfect.
 Some unambiguous bugs are prohibitively difficult to detect at run-time.
 
-Further, sanitizers sometimes fail to instrument for UB as advertised.
-For example, if the logic
-which identifies an instance of UB is located in the compiler's optimiser,
-then instrumentation will not occur unless the optimiser is enabled. For this reason,
-it is important to test code with settings as close as possible to production.
+Sometimes, sanitizers fail to instrument for UB as advertised.
+For example, if the logic which recognises the possibility of UB
+is located in the compiler's optimiser, and if optimisation is not enabled,
+instrumentation may not occur. For this reason,
+it is important to test code with settings that are as close to release as possible.
 
 Finally, not all bugs are undefined behaviour.
 Some bugs violate only the End User Contract.
@@ -1208,10 +1212,10 @@ In short:
 
 * Use assertions to formally express C++ API Contracts.
 * Then, you can easily choose a bug handling strategy, change your mind, or use different
-  strategies in different builds.
-* But you cannot so easily change error-handling strategies.
-* Sometimes, a bug in a program isn't a bug, it's an error. This happens as part
-  of the Test User Contract and it's important to understand the special properties
+  strategies for different contracts and in different builds.
+* You cannot so easily change error-handling strategies.
+* Sometimes, a bug in a program isn't a bug; it's an error. This happens as part
+  of the Test User Contract, and it's important to understand the irregularities
   of this contract.
 * UB is not something that is confined to the ISO C++ Standard.
 * UB is essential for efficiency, flexibility and for finding bugs.
