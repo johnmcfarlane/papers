@@ -1348,6 +1348,18 @@ and the contracts they affect, are both required to successfully handle disappoi
   </tr>
 
   <tr>
+    <td><i>-D_LIBCPP_DEBUG=1</i></td>
+    <td>✓</td>
+    <td></td>
+    <td></td>
+    <td>✓</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td>trap Standard Library user contract violations</td>
+  </tr>
+
+  <tr>
     <td><i>-D_GLIBCXX_ASSERTIONS</i></td>
     <td></td>
     <td>✓</td>
