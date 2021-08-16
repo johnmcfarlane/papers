@@ -1312,6 +1312,18 @@ and the contracts they affect, are both required to successfully handle disappoi
   </tr>
 
   <tr>
+    <td><i>-D_LIBCPP_ENABLE_NODISCARD</i></td>
+    <td>✓</td>
+    <td></td>
+    <td></td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>enable some warnings</td>
+  </tr>
+
+  <tr>
     <td><i>-fsanitize=undefined,address</i> etc.</td>
     <td>✓</td>
     <td>✓</td>
