@@ -1189,22 +1189,29 @@ healthy development process.
 
 ### A Carefully Controlled Vagueness
 
-Nevertheless, developers who value program correctness recognise that a formal,
-machine-testable notion of bugs is every bit as important as type safety.
-It is undoubtedly better to discover bugs early in the development
-process and this is why static typing promotes safer code.
+Nevertheless, the notion of Unambiguous Bugs is every bit as important as type safety.
+Certainly, it is better to discover bugs early in the development process
+and this is why static typing is so beneficial.
+However, discovering bugs during program execution is a necessary fallback.
 
-However, constant expressions illustrate that once tools are able to detect
-Unambiguous Bugs during compilation,
-what was previously seen as dynamic and therefore problematic
-quickly becomes static and therefore beneficial.
-But even if a bug escapes the build process, it is still better to identify it
-during testing than to let it survive to production.
+If behaviour of a program is defined at the point where an Unambiguous Bug occurs,
+the behaviour must be diagnostic in nature. Otherwise, the bug is
 
-Defining the behaviour of code that contains a bug
-only makes is harder to identify the bug during development.
-For this reason, much undefined behaviour, including all Unambiguous Bugs
-is helpful for developing correct, safe code — provided it is tested for.
+* harder for tools to identify,
+* harder for engineers to identify,
+* no longer diagnosed in constant expressions, and
+* normalised as OK (as per [Hyrum's Law](https://www.hyrumslaw.com/)).
+
+There is often a 'least worst' defined behaviour for a bug,
+e.g. signed integer modulo behaviour, or a valid-but-wrong iterator value
+returned from a binary search performed on an unordered sequence.
+Often, these are the default behaviour in unoptimised configurations.
+
+Bespoke behaviour definitions can be locked in, e.g. using GCC's `-fwrapv` flag.
+They prevent detection of bugs and may pessimise bug-free programs.
+But where bugs slip through the net (which they do), they can reduce attack vectors.
+***Nothing about UB prevents toolchains from implementing these behaviours.***
+Feel free to seek them out as a last line of defence in safety-critical applications.
 
 ## Conclusion
 
