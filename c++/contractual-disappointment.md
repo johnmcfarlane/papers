@@ -29,7 +29,7 @@ Section 4.2 of [P0709R4, Zero-overhead Deterministic Exceptions: Throwing values
 "Proposed cleanup: Don’t report logic errors using exceptions",
 makes clear the distinction between errors and bugs:
 
-* A _bug_ is the violation of a C++ API Contract or the ISO C++ Standard.
+* A _bug_ is the violation of a C++ API Contract or the C++ Standard.
 * An _error_, is when an interface couldn’t do what it advertised.
 
 A third category, _abstract machine corruption_, is identified by P0709R4,
@@ -79,7 +79,7 @@ However, this document concentrates on user contract violation for two reasons:
 2. The user is typically the less experienced and more error-prone of
    the two parties. Therefore, violation by the user is more common.
 
-For example, in the case of the ISO C++ Standard (below),
+For example, in the case of the C++ Standard (below),
 the toolchain provider is far less likely to be the cause of a contract
 violation by virtue of the significant rigour, effort and feedback poured into such
 tools.
@@ -117,7 +117,7 @@ Such violations could result in security vulnerabilities
 or unsafe program behaviour in safety-critical applications.
 Fuzzers can help to test whether the program fails to reject erroneous input.
 
-#### ISO C++ Standard
+#### C++ Standard
 
 A typical language specification for a C++ program is a revision of
 [the ISO C++ Standard](https://isocpp.org/std/the-standard).
@@ -129,13 +129,13 @@ A typical language specification for a C++ program is a revision of
 * user: the program developer
 * violation by user: undefined behaviour
 
-Note: the ISO C++ Standard also diagnoses violation by user at compile time.
+Note: the C++ Standard also diagnoses violation by user at compile time.
 However, the focus of this document is run-time disappointment.
 
 #### C++ API Contract
 
 Note: For most intents and purposes, the library incorporated into
-the ISO C++ Standard can be considered to be a collection of C++ APIs.
+the C++ Standard can be considered to be a collection of C++ APIs.
 
 * agreement: documentation (including self-documentation)
 * provider: C++ API implementer (often also the program developer)
@@ -186,12 +186,12 @@ Commonly, tests aim to detect provider contract violations of
 * the C++ API Contract using unit tests, which exercise individual APIs.
 
 However, it is also important to test for user contract violations of
-the ISO C++ Standard, and C++ API Contract.
+the C++ Standard, and C++ API Contract.
 This can be achieved using assertions and toolchain-specific tools:
 
 * Assertions can be configured to trap provider *and* user C++ API Contract violations.
 * Dynamic analysis tools such as sanitizers can trap
-  ISO C++ Standard violation by the program developer.
+  C++ Standard violation by the program developer.
 
 Where testing leads to trapping of a contract violation,
 this should be treated in the same way that user errors are treated
@@ -208,7 +208,7 @@ are *not* a violation of the Test User Contract.
 * agreement: documentation of dynamic analysis tools and/or sanitizers
 * provider:
   * analysis tool providers whose tools flag violations — especially of the
-    ISO C++ Standard — or
+    C++ Standard — or
   * C++ API Contract providers who are encouraged to assert that their APIs are used
     correctly.
 * user: an engineer who may be some combination of
@@ -223,7 +223,7 @@ Examples of contract trapping techniques that are commonly employed are
 
 * API contract violation tests (e.g. assertions, pre-conditions and post-conditions),
 * API contract fulfilment tests (e.g. unit tests), and
-* ISO C++ Standard contracts (e.g. by enabling sanitizers
+* C++ Standard contracts (e.g. by enabling sanitizers
   and flags such as `_GLIBCXX_ASSERTIONS` and `_ITERATOR_DEBUG_LEVEL`).
 
 ### Types of Contract Violation
@@ -244,7 +244,7 @@ time, but which it is possible to test at run-time.
 
 This contractual category is the constituency of violations from
 
-* ISO C++ Standard, and
+* C++ Standard, and
 * Dynamically-Enforceable C++ API Contracts
 
 that can be identified programmatically and unambiguously at run-time.
@@ -256,7 +256,7 @@ that can be identified programmatically and unambiguously at run-time.
 
 Examples of violations include
 
-* behaviour designated as undefined behaviour by the ISO C++ Standard, e.g.
+* behaviour designated as undefined behaviour by the C++ Standard, e.g.
   * integer divide-by-zero,
   * out-of-bounds array lookup,
   * out-of-lifetime object access,
@@ -298,7 +298,7 @@ Examples of features used to deal with bugs can be found in Appendix A.
 
 The program can stop. (It may also emit a diagnostic message or break in a debugger.)
 
-Dynamically-Enforceable ISO C++ Standard violations require
+Dynamically-Enforceable C++ Standard violations require
 system or toolchain support to trap. For example,
 null pointer dereferences may be trapped by systems with virtual memory, and
 out-of-bounds array lookup may be trapped by dynamic analysis tools such as sanitizers.
@@ -323,7 +323,7 @@ and by most sanitizers.
 #### Nonenforcement Strategy
 
 The program continues past the bug, effectively ignoring the contract violation.
-For ISO C++ Standard contract violations, neither optimisation nor instrumentation
+For C++ Standard contract violations, neither optimisation nor instrumentation
 is enabled.
 For C++ API Contract violations, assert statements behave as if they are not there:
 
@@ -1018,14 +1018,14 @@ auto main(int argc, char* argv[]) -> int
 ### C++ API Contract Violation is Undefined Behaviour
 
 It is a common misconception that the term _undefined behaviour_
-refers only to violations of some subset of the ISO C++ Standard.
+refers only to violations of some subset of the C++ Standard.
 
 The standard [describes](https://eel.is/c++draft/defns.undefined) UB as:
 
 > behavior for which this document imposes no requirements
 
 This implies that, the standard does *not* exclude, from its definition of UB,
-violations of contracts outside of the ISO C++ Standard.
+violations of contracts outside of the C++ Standard.
 
 A more accurate and helpful view of UB is that it is one possible result of
 a violation of any contract that occurs at run-time,
@@ -1064,7 +1064,7 @@ And in the absence of testing, it's easy to miss a failure case,
 [e.g.](https://godbolt.org/z/5e3cvj95f):
 
 ```c++
-// signed integer overflow violates ISO C++ Standard, is already UB
+// signed integer overflow violates C++ Standard, is already UB
 number_to_letter(0x7fffffff);
 ```
 
@@ -1128,7 +1128,7 @@ the contract author impedes the engineer's ability to identify bugs.
 
 C++ toolchains increasingly optimise programs by assuming their correctness.
 These optimisations are not free.
-They are provided to users in exchange for not violating the ISO C++ Standard.
+They are provided to users in exchange for not violating the C++ Standard.
 
 Historically, such contract violations have been difficult to detect.
 Fortunately, modern toolchains provide facilities for their detection.
@@ -1222,7 +1222,7 @@ In short:
 * Sometimes, a bug in a program isn't a bug; it's an error. This happens as part
   of the Test User Contract, and it's important to understand the irregularities
   of this contract.
-* UB is not something that is confined to the ISO C++ Standard.
+* UB is not something that is confined to the C++ Standard.
 * UB is essential for efficiency, flexibility and for finding bugs.
 * It is increasingly unreasonable to enable optimisations in software
   without first testing it using sanitizers.
@@ -1251,7 +1251,7 @@ using three popular compilers:
 To some extent, different strategies can be applied to different bugs
 within the same build of a program.
 For example, the developer may wish to trap C++ API Contract violations
-but prevent ISO C++ Standard violations.
+but prevent C++ Standard violations.
 Or they may wish to prevent all user contract violations with the sole
 exception of signed integer overflow.
 
@@ -1341,7 +1341,7 @@ and the contracts they affect, are both required to successfully handle disappoi
     <td></td>
     <td></td>
     <td></td>
-    <td>trap ISO C++ Standard user contract violations<sup>†</sup></td>
+    <td>trap C++ Standard user contract violations<sup>†</sup></td>
   </tr>
 
   <tr>
@@ -1494,7 +1494,7 @@ or <i>-Og</i></td>
 Notes:
 
 † Use sanitizer flags ***in addition to*** optimisation flags
-to trap common occurrences of ISO C++ Standard user contract violations.
+to trap common occurrences of C++ Standard user contract violations.
 Additional [Clang sanitizers](https://clang.llvm.org/docs/index.html) are dedicated
 to catching bugs at run-time. Some of them work with GCC as well as Clang.
 Tools like Valgrind can also catch some of these bugs.
