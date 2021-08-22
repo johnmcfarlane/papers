@@ -2,8 +2,6 @@
 
 Reply-to: John McFarlane <[sg21@john.mcfarlane.name](mailto:sg21@john.mcfarlane.name)>
 
-> "Oh who can say how subtle and safe one feels" (John Betjeman, False Security)
-
 This document offers advice on writing robust programs in C++.
 It draws on personal experience in domains including interactive entertainment,
 large-scale server systems, and safety-critical devices.
