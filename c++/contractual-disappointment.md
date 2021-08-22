@@ -1345,7 +1345,7 @@ and the contracts they affect, are both required to successfully handle disappoi
   </tr>
 
   <tr>
-    <td><i>-fwrapv</i></td>
+    <td><i>-ftrapv</i></td>
     <td>✓</td>
     <td>✓</td>
     <td></td>
