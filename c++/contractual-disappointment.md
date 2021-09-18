@@ -702,10 +702,10 @@ There is heightened risk of compromise, corruption or critical failure if the
 program is ever invoked outside the parameters of the End User Contract.
 Even when it is possible, it is rarely worthwhile taking this risk.
 
-## C++ API Contract Authoring Strategies
+## C++ API Contract Strategies
 
-We will briefly explore some ways to design our C++ API Contracts
-so they are set up for success.
+We will briefly explore some ways to design and implement C++ API Contracts
+which can help to deal with disappointment.
 
 ### The Pit of False Security
 
