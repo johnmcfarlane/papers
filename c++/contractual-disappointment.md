@@ -716,7 +716,8 @@ Defending against failure by silently proceeding as normal is unhelpful.
 Example 1:
 
 ```c++
-auto load_file(std::string filename) -> std::vector<std::byte>
+auto load_file(std::string filename)
+-> std::vector<std::byte>
 {
   std::ifstream file{filename};
   if (!file) {
@@ -761,7 +762,9 @@ In a strongly-typed language, the types of a declaration are a powerful form of 
 Example 1 revisited:
 
 ```c++
-auto load_file(std::string filename) -> std::optional<std::vector<std::byte>>
+// The nodiscard attribute has very wide applicability.
+[[nodiscard]] auto load_file(std::string filename)
+-> std::optional<std::vector<std::byte>>
 {
   std::ifstream file{filename};
   if (!file) {
@@ -786,7 +789,7 @@ Example 2 corrected:
 
 ```c++
 // precondition: traffic_light must be red, amber or green
-auto pull_away(color traffic_light)
+[[nodiscard]] auto pull_away(color traffic_light)
 {
   switch (traffic_light) {
     case color::red:
