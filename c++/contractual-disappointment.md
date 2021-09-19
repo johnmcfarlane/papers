@@ -810,6 +810,48 @@ Note that the provider might be tempted to place the assertion in a `default` cl
 This is not advised. There is no acceptable default behaviour here
 so it's better not to express the intent that there is.
 
+### Be Decisive
+
+Having decided that a potential disappointment is a bug,
+
+* _do_ assert that the bug does not happen,
+* _don't_ treat it as an error, and
+* _don't_ write code to handle it or to defend against it.
+
+Consider a program in which `ASSERT` assumes no Unambiguous Bugs
+(as described in Prevention Enforcement Strategy):
+
+```c++
+// precondition: traffic_light must be red, amber or green
+[[nodiscard]] auto pull_away(color traffic_light)
+{
+  switch (traffic_light) {
+    case color::red:
+      return false;
+    case color::amber:
+      return false;
+    case color::green:
+      return true;
+  }
+
+  // This line is unreachable.
+  ASSERT(false);
+
+  // Bad: this code also can never be reached.
+  // The compiler may even optimise it away!
+  std::fprintf(stderr, "mysterious enum value, %d\n", (int)traffic_light);
+  return false;
+}
+```
+
+Concerns about assumption-based optimisation are raised in [P2064R0, Assumptions](https://wg21.link/p2064r0).
+Examples from P2064R0 suggest than a lot of defective code reaches production
+without first being tested using the Trap Enforcement Strategy.
+Instead of fixing the offending code, the paper recommends that asserts aren't assumed.
+That is the approach taken by both
+the Nonenforcement Strategy and the Log-And-Continue Strategy.
+But for other strategies, it is excessive and harms performance.
+
 ## Example Program
 
 The following excerpts from the program hosted
