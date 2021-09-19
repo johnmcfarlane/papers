@@ -2,15 +2,18 @@
 
 Reply-to: John McFarlane <[sg21@john.mcfarlane.name](mailto:sg21@john.mcfarlane.name)>
 
-This document offers advice on writing robust programs in C++.
-It draws on personal experience in domains including interactive entertainment,
-large-scale server systems, and safety-critical devices.
+## Introduction
+
+Writing robust software in C++ is challenging.
+Effective use of modern tools and guidelines helps a great deal.
+And successive revisions of the language and the standard library
+add features which help the user prevent problems.
+But inevitably, upsets happen during program operation.
+This document examines what program developers can do to help.
 
 Contracts and their implications are the main tool used here to frame run-time failure.
 Through their lens I attempt to show that careful understanding of interfaces
 is the most effective way to ensure usability, efficiency *and* reliability.
-
-## Introduction
 
 ### Disappointment
 
