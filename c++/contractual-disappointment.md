@@ -1328,11 +1328,12 @@ and the contracts they affect, are both required to successfully handle disappoi
     <td>✓</td>
     <td>✓</td>
     <td></td>
-    <td>✓</td>
     <td></td>
     <td></td>
     <td></td>
-    <td>trap signed integer overflow</td>
+    <td></td>
+    <td>avoid; <a href="https://gcc.gnu.org/bugzilla/show_bug.cgi?id=61893">broken
+on GCC</a></td>
   </tr>
 
   <tr>
