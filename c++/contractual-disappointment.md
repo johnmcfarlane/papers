@@ -29,7 +29,8 @@ and that the correct strategy for handling a violation depends on two things:
 ### Bugs and Errors
 
 Section 4.2 of [P0709R4, Zero-overhead Deterministic Exceptions: Throwing values](https://wg21.link/p0709r4),
-makes clear the distinction between bugs and errors:
+makes clear the distinction between bugs and errors.
+In terms of contracts:
 
 * A _bug_ is the violation of a C++ API Contract or the C++ Standard.
 * An _error_, is when an interface couldn’t do what it advertised.
