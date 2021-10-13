@@ -52,7 +52,8 @@ the user wishes for bugs to be treated as errors.
 While not a specific concern of this this document,
 security depends upon successful handling of disappointment.
 
-[NIST SP 500-268, Source Code Security Analysis Tool Function Specification Version 1.1](https://doi.org/10.6028/NIST.SP.500-268v1.1),
+[NIST SP 500-268,](https://doi.org/10.6028/NIST.SP.500-268v1.1)
+[Source Code Security Analysis Tool Function Specification Version 1.1](https://doi.org/10.6028/NIST.SP.500-268v1.1),
 states that a security failure is caused by vulnerabilities.
 Applying the terminology of NIST SP 500-268 to this document:
 
@@ -80,7 +81,7 @@ Both the user and the provider have contractual obligations.
 However, this document concentrates on user contract violation for two reasons:
 
 1. It's simpler to focus in on one side of the contract.
-2. The user is typically the less experienced and more error-prone of the two parties.
+1. The user is typically the less experienced and more error-prone of the two parties.
 
 #### Contract Author
 
