@@ -302,23 +302,29 @@ Modern toolchains can help in following these strategies.
 
 The program can stop. (It may also emit a diagnostic message or break in a debugger.)
 
-Dynamically-Enforceable C++ Standard violations require
-system or toolchain support to trap. For example,
+To trap Dynamically-Enforceable C++ Standard violations requires
+system or toolchain support. For example,
 null pointer dereferences may be trapped by systems with virtual memory, and
 out-of-bounds array lookup may be trapped by dynamic analysis tools such as sanitizers.
 
-Dynamically-Enforceable C++ API Contract violations must be trapped using assertions.
+Dynamically-Enforceable C++ API Contract violations should be trapped using assertions.
 
 Disadvantages:
 
-* Code may need to be instrumented, incurring run-time cost.
 * On violation, the program completely fails in its task.
+* Code may need to be instrumented, incurring run-time cost.
+* Some violations are prohibitively expensive to trap.
 
 Advantages:
 
-* No further incorrect behaviour will be exhibited by the program;
+* When detected, no further incorrect behaviour will be exhibited by the program;
   the user is protected from unbounded risk.
-* Feedback is swift and the developer is encouraged to fix bugs immediately.
+* Feedback is timely and targetted, the developer is compelled to address bugs promptly
+  and they are empowered to avoid mistakes in future.
+* Automated tests can identify a great many Unambiguous Bugs
+  in code that uses modern tools and guidelines
+  (such as the [C++ Core Guidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines)).
+* Fuzz testing relies on Unambiguous Bugs to identify implementation vulnerabilities.
 
 #### Nonenforcement Strategy
 
