@@ -2,6 +2,8 @@
 
 Reply-to: John McFarlane <[sg21@john.mcfarlane.name](mailto:sg21@john.mcfarlane.name)>
 
+> “make it run, make it right, make it fast” (Kent Beck's dad, circa 1975)
+
 ## Introduction
 
 Writing robust software in C++ is challenging.
