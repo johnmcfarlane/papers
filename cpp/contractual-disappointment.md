@@ -1259,6 +1259,7 @@ Feel free to seek them out as a last line of defence in safety-critical applicat
 
 In short:
 
+* Use modern C++ guidelines and tools to prevent bugs before they are written.
 * Use assertions to formally express C++ API Contracts.
 * Then, you can easily choose a bug handling strategy, change your mind, or use different
   strategies for different contracts and in different builds.
