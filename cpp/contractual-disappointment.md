@@ -1342,7 +1342,7 @@ and the contracts they affect, are both required to successfully handle disappoi
   </tr>
 
   <tr>
-    <td><i>-Wall</i>, <i>-Wextra</i> and <i>-Wpedantic</i></td>
+    <td><i>-Wall</i>, <i>-Wconversion</i>, <i>-Wextra</i> and <i>-Wpedantic</i></td>
     <td>✓</td>
     <td>✓</td>
     <td></td>
