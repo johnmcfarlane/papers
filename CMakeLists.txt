@@ -29,9 +29,10 @@ function(md_to_html MD_FILE FILTER)
             COMMAND mkdir -p "${HTML_PATH}"
             COMMAND sed ${FILTER} "${CMAKE_CURRENT_LIST_DIR}/${MD_FILE}"
                 | ${PANDOC_EXECUTABLE}
-                    --from=commonmark
+                    --from=commonmark+auto_identifiers
                     --to=html
                     --standalone
+                    --toc-depth=4
                     --include-in-header=${CMAKE_CURRENT_LIST_DIR}/css.xml
                     -o "${HTML_PATH}/${HTML_FILE}"
                     --metadata pagetitle="${FILENAME}"

@@ -1,0 +1,33 @@
+{
+    "cSpell.words": [
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "Alicja",
+        "behavior",
+        "DNDEBUG",
+        "elif",
+        "errc",
+        "finline",
+        "fprintf",
+        "fputs",
+        "fsanitize",
+        "ftrapv",
+        "fwrapv",
+        "GLIBCXX",
+        "Krzemieński",
+        "LIBCPP",
+        "MSVC",
+        "nodiscard",
+        "Nonenforcement",
+        "noreturn",
+        "nullopt",
+        "Ofast",
+        "Przybyś",
+        "tellg",
+        "Valgrind",
+        "vention",
+        "Wconversion",
+        "Werror",
+        "Wextra",
+        "Wpedantic"
+    ]
+}
