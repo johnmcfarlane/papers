@@ -545,24 +545,27 @@ techniques can be evaluated based on how well they cover different terrains.
 
 #### Diagnostics
 
-While not directly related to sending disappointment back to an external process,
-the logging or display of detailed error messages to the user is very important.
-A clear message in human-readable form is what the user needs
-in order to fix most errors.
+While not directly related to control flow,
+the logging or display of disappointment is very important to the user.
+A clear message in human-readable form is what is needed
+in order to get beyond most errors.
 
-If the program is interactive, it may be presented in the form of a dialogue box,
+The message should not include implementation details, such as source location:
+it should be easy to find the source of the diagnostic from the message text itself.
+
+If the program is interactive, delivery may be via a dialogue box,
 an output window or a status bar.
-Otherwise, logging/console output is the medium through which the users is reached.
+Otherwise, logging or console output are the media through which the user is reached.
 Printing a message to the error stream is usually adequate.
 
 ```c++
 std::cerr << std::format("failed to open file, \"{}\"\n", filename);
 ```
 
-If the program can carry on past this line of code as normal,
-what we are dealing with probably isn't an error at all.
-If this is an error, typical control flow will be dramatically altered
-and further choices will need to be made irrespective of any diagnostics...
+If the program can proceed past this line of code as normal,
+there probably isn't an error at all.
+But if there is, typical control flow will be dramatically altered
+and further design choices must be made...
 
 #### Return Values
 
