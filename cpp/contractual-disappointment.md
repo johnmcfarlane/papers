@@ -368,37 +368,44 @@ Disadvantages:
 
 #### Prevention Enforcement Strategy
 
-The program can assume that defects have been eliminated.
-Assuming bugs do not occur, no contract check will fail,
-so no such check is required at run-time.
-Further, users can communicate this assumption to the compiler
-in the form of optimisation flags.
+The only truly safe course of action is to eliminate all contract violations.
+While it's wise to assume that all programs contain bugs,
+their incidence can reduce dramatically by
 
-Finally, user-defined assertions may also communicate this assumption to the optimiser:
+* observing modern practices - as documented in guidelines like the
+  [CCG](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines)
+  and enforced by analysers like
+  [Clang-Tidy](https://clang.llvm.org/extra/clang-tidy),
+* fulfilling the Test User Contract by writing asserts, and
+* following a thorough testing regime, while
+* taking full advantage of the Trap Enforcement Strategy.
+
+The benefits of zero bug tolerance make Prevention Enforcement Strategy compelling.
+Besides safety and security, opportunities for optimisation present themselves:
+
+* Assuming assertions hold means that their run-time checks can be elided.
+* Assuming no violation of the C++ Standard allows for aggressive optimisation.
+* Through compiler hints, the same optimisations can be applied to asserts.
+
+For example, assertion macros can use compiler-specific hints, e.g.
 
 ```c++
 #define ASSERT(condition) ((condition) ? static_cast<void>(0) : __builtin_unreachable())
 ```
 
+* to trap C++ API Contract violations using UB sanitizers, and
+* to streamline C++ API implementations using optimizers.
+
 Advantages:
 
-* Optimiser is given hints which are often necessary to fulfil
-  the zero-overhead principle.
-* Sanitizer seamlessly maximises the number of violations it is able to trap.
+* The program operates correctly, reliably and securely.
+* The program operates with minimum overhead.
 
 Disadvantages:
 
-* Developers must first test their code thoroughly
-  using the Trap Enforcement Strategy and
-  taking full advantage of the Test User Contract.
-* Developers who skip thorough testing but still enable optimisations may see
-  pronounced deterioration in the behaviour of their program.
-
-Concerns about this deterioration are raised in ([P2064R0](https://wg21.link/p2064r0))
-suggesting than an alarming amount of defective code reaches production
-without first being tested using the Trap Enforcement Strategy.
-It is always unwise to release software that contains undefined behaviour.
-Optimising such programs only throws fuel on an already-lit fire.
+* Great onus is placed on the developer to ensure bugs are eradicated.
+* Failure to minimise bugs before enabling optimisations
+  increases the likelihood of observable defects and vulnerabilities.
 
 ### Enforcement Profiles
 
