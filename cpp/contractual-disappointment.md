@@ -46,7 +46,7 @@ Alternatively, they may be errors,
 e.g. a program executed on a system with inadequate resources.
 
 There is one occasion when the bug versus error distinction breaks down.
-That is when considering the Test User Contract.
+That is when considering the [Test User Contract](#test-user-contract).
 When testing for contract violations,
 the user wishes for bugs to be treated as errors.
 
@@ -218,7 +218,7 @@ It is important to understand that what is considered a bug outside of testing
 (e.g. signed integer overflow or performing binary search on an unsorted sequence)
 now becomes merely an error.
 Bugs written by the program developer which are trapped during testing
-are *not* a violation of the Test User Contract.
+are *not* a violation of the [Test User Contract](#test-user-contract).
 
 * agreement: documentation of dynamic analysis tools and/or sanitizers
 * provider:
@@ -387,7 +387,7 @@ their incidence can reduce dramatically by
   [CCG](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines)
   and enforced by analysers like
   [Clang-Tidy](https://clang.llvm.org/extra/clang-tidy),
-* fulfilling the Test User Contract by writing asserts, and
+* fulfilling the [Test User Contract](#test-user-contract) by writing asserts, and
 * following a thorough testing regime, while
 * taking full advantage of the Trap Enforcement Strategy.
 
@@ -818,8 +818,8 @@ could reasonably avoid the disappointment,
 it is far better to clearly put the responsibility onto the caller:
 
 * Make it clear that it's a bug for the API to be used disappointingly.
-* Fulfil the obligations of a Test User Contract provider and help the user discover
-  the bug, e.g. with assertions.
+* Fulfil the obligations of a [Test User Contract](#test-user-contract) provider
+  and help the user discover the bug, e.g. with assertions.
 
 Example 2 corrected:
 
@@ -1184,10 +1184,11 @@ Humans often require feedback in order to identify mistakes.
 Humans participate in two contracts related to running programs:
 
 * the program user in the [End User Contract](#end-user-contract), and
-* the engineer in the Test User Contract.
+* the engineer in the [Test User Contract](#test-user-contract).
 
-Paradoxically, the Test User Contract relies on the narrowness of
-[C++ API Contracts](#c-api-contracts) in order to fulfil a wide contract of its own.
+Paradoxically, the [Test User Contract](#test-user-contract)
+relies on the narrowness of [C++ API Contracts](#c-api-contracts)
+in order to fulfil a wide contract of its own.
 Thus by widening [C++ API Contracts](#c-api-contracts), the [Contract Author](#contract-author)
 impedes the engineer's ability to identify bugs.
 
@@ -1280,7 +1281,8 @@ In short:
   strategies for different contracts and in different builds.
 * You cannot so easily change error-handling strategies.
 * Sometimes, a bug in a program isn't a bug; it's an error. This happens as part
-  of the Test User Contract, and it's important to understand the irregularities
+  of the [Test User Contract](#test-user-contract),
+  and it's important to understand the irregularities
   of this contract.
 * UB is not something that is confined to the [C++ Standard](#c-standard).
 * UB is essential for efficiency, flexibility and for finding bugs.
