@@ -34,7 +34,7 @@ Section 4.2 of [P0709R4, Zero-overhead Deterministic Exceptions: Throwing values
 makes clear the distinction between bugs and errors.
 In terms of contracts:
 
-* A _bug_ is the violation of a C++ API Contract or the C++ Standard.
+* A _bug_ is the violation of the C++ API Contracts or the C++ Standard.
 * An _error_, is when an interface couldn’t do what it advertised.
 
 A third category, _abstract machine corruption_, is identified by P0709R4,
@@ -133,7 +133,7 @@ A typical language specification for a C++ program is a revision of
 Note: the C++ Standard also diagnoses violation by user at compile time.
 However, the focus of this document is run-time disappointment.
 
-#### C++ API Contract
+#### C++ API Contracts
 
 * agreement: documentation (including self-documentation)
 * provider: C++ API implementer (often also the program developer)
@@ -195,13 +195,13 @@ Commonly, tests aim to detect _provider_ contract violations of
 
 * the End User Contract using whole-program or black box testing
   (e.g. functional tests), and
-* the C++ API Contract using unit tests, which exercise individual APIs.
+* C++ API Contracts using unit tests, which exercise individual APIs.
 
 However, it is also important to test for _user_ contract violations of
-the C++ Standard, and C++ API Contract.
+the C++ Standard, and C++ API Contracts.
 This can be achieved using assertions and toolchain-specific tools:
 
-* Assertions can be configured to trap provider *and* user C++ API Contract violations.
+* Assertions can be configured to trap provider *and* user C++ API Contracts violations.
 * Dynamic analysis tools such as sanitizers can trap
   C++ Standard violations by the program developer.
 
@@ -221,14 +221,14 @@ are *not* a violation of the Test User Contract.
 * provider:
   * analysis tool providers whose tools flag violations — especially of the
     C++ Standard — or
-  * C++ API Contract providers who are encouraged to assert that their APIs are used
-    correctly.
+  * C++ API Contracts providers who are encouraged to assert that their APIs
+    are used correctly.
 * user: an engineer who may be some combination of
-  * the program developer testing a C++ API Contract using unit tests,
+  * the program developer testing C++ API Contracts using unit tests,
   * the test engineer testing the End User Contract, or
   * the dev-ops engineer testing either of the above as part of a CI pipeline
 * violation by user:
-  * If a C++ API Contract violation could reasonably be identified (e.g. through
+  * If a C++ API Contracts violation could reasonably be identified (e.g. through
     an assertion) but is not, then the program developer failed to use the tool effectively.
 
 ### Types of Contract Violation
@@ -268,7 +268,7 @@ Examples of violations include
   * calling `std::vector::front()` on an empty object,
   * calling `upper_bound` on an unsorted sequence, and
   * passing iterators from separate sequences to `std::for_each`, and
-* C++ API Contract violations for which a test could be expressed in-code.
+* C++ API Contracts violations for which a test could be expressed in-code.
 
 The cost involved in testing for these violations varies.
 But in theory, all of them can be automatically checked
@@ -309,7 +309,7 @@ system or toolchain support. For example,
 null pointer dereferences may be trapped by systems with virtual memory, and
 out-of-bounds array lookup may be trapped by dynamic analysis tools such as sanitizers.
 
-Dynamically-Enforceable C++ API Contract violations should be trapped using assertions.
+Dynamically-Enforceable C++ API Contracts violations should be trapped using assertions.
 
 Disadvantages:
 
@@ -333,7 +333,7 @@ Advantages:
 The program continues past the bug, effectively ignoring the contract violation.
 For C++ Standard contract violations, neither optimisation nor instrumentation
 is enabled.
-For C++ API Contract violations, assert statements behave as if they are not there:
+For C++ API Contracts violations, assert statements behave as if they are not there:
 
 ```c++
 #define ASSERT(condition) ((void)0)
@@ -348,7 +348,7 @@ Disadvantages:
 
 * Tools have limited ability to identify bugs
   because contract violation is effectively normalised.
-* C++ API Contract violations in constant expressions are not compiler errors.
+* C++ API Contracts violations in constant expressions are not compiler errors.
 * Any violation results in UB.
 * It is unsafe to enable compiler optimisations that assume contracts are not violated.
 
@@ -393,7 +393,7 @@ For example, assertion macros can use compiler-specific hints, e.g.
 #define ASSERT(condition) ((condition) ? static_cast<void>(0) : __builtin_unreachable())
 ```
 
-* to trap C++ API Contract violations using UB sanitizers, and
+* to trap C++ API Contracts violations using UB sanitizers, and
 * to streamline C++ API implementations using optimizers.
 
 Advantages:
@@ -725,7 +725,7 @@ There is heightened risk of compromise, corruption or critical failure if the
 program is ever invoked outside the parameters of the End User Contract.
 Even when it is possible, it is rarely worthwhile taking this risk.
 
-## C++ API Contract Strategies
+## C++ API Contracts Strategies
 
 We will briefly explore some ways to design and implement C++ API Contracts
 which can help to deal with disappointment.
@@ -801,7 +801,7 @@ Example 1 revisited:
 ### Disappointment By Contract
 
 Example 1 showed disappointment that could reasonably happen in a bug-free program.
-But when the C++ API Contract user could reasonably avoid the disappointment,
+But when the C++ API Contracts user could reasonably avoid the disappointment,
 it is far better to clearly put the responsibility onto the caller:
 
 * Make it clear that it's a bug for the API to be used disappointingly.
@@ -1069,7 +1069,7 @@ auto main(int argc, char* argv[]) -> int
 
 ## Discussion
 
-### C++ API Contract Violation is Undefined Behaviour
+### C++ API Contracts Violation is Undefined Behaviour
 
 It is a common misconception that the term _undefined behaviour_
 refers only to violations of some subset of the C++ Standard.
@@ -1131,7 +1131,7 @@ constexpr auto number_to_letter(int number)
 ```
 
 Here, the implementer changed the definition — something they are entitled to do.
-Now, almost every possible C++ API violation is also a C++ Standard violation.
+Now, almost every possible C++ API Contracts violation is also a C++ Standard violation.
 
 It is easy to become distracted by the wonders of modern compilers.
 They are able to generate highly optimised code, by assuming contract fulfilment.
@@ -1173,8 +1173,8 @@ Humans participate in two contracts related to running programs:
 * the engineer in the Test User Contract.
 
 Paradoxically, the Test User Contract relies on the narrowness of
-the C++ API Contract in order to fulfil a wide contract of its own.
-Thus by widening a C++ API Contract,
+C++ API Contracts in order to fulfil a wide contract of its own.
+Thus by widening C++ API Contracts,
 the contract author impedes the engineer's ability to identify bugs.
 
 ### Don't Optimize Until You Sanitize
@@ -1295,7 +1295,7 @@ using three popular compilers:
 
 To some extent, different strategies can be applied to different bugs
 within the same build of a program.
-For example, the developer may wish to trap C++ API Contract violations
+For example, the developer may wish to trap C++ API Contracts violations
 but prevent C++ Standard violations.
 Or they may wish to prevent all user contract violations with the sole
 exception of signed integer overflow.
