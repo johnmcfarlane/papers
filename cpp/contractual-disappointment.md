@@ -422,7 +422,7 @@ Disadvantages:
 
 ### Enforcement Profiles
 
-Now that we have established some Unambiguous Bug Strategies,
+Now that we have established some [Unambiguous Bug Strategies](#unambiguous-bug-strategies),
 how do we choose between them?
 The answer depends on the End User and the type of application being built.
 Some examples follow.
@@ -1303,7 +1303,7 @@ and guidance.
 ## Appendix A - Toolchain-Specific Recommendations
 
 This section introduces some of the toolchain-supported features
-which can be used to help enforce the Unambiguous Bug Strategies
+which can be used to help enforce the [Unambiguous Bug Strategies](#unambiguous-bug-strategies)
 
 * **Trap** Enforcement Strategy,
 * **Non**enforcement Strategy,
