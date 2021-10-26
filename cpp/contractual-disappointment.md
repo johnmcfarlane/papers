@@ -450,7 +450,7 @@ Examples include life-support systems and autonomous vehicle controllers.
 #### Safety-Critical System Without Redundancy
 
 A safety-critical system *without* backup/redundancy
-might consider Prevention Enforcement Strategy, or Log-And-Continue Strategy.
+might consider Prevention Enforcement Strategy, or [Log-And-Continue Strategy](#log-and-continue-strategy).
 
 However, logging may not be viable for some safety-critical embedded controllers.
 Such minimal systems may not have the facility to log errors or to off-board them.
@@ -461,7 +461,7 @@ Optimisations which assume fulfilment of contract violations
 may represent a small — but unnecessary — risk.
 
 Thus, [Nonenforcement Strategy](#nonenforcement-strategy) or
-Log-And-Continue Strategy are preferable.
+[Log-And-Continue Strategy](#log-and-continue-strategy) are preferable.
 
 #### Performance-Critical/Resource-Constrained
 
@@ -486,7 +486,7 @@ will reap benefits in terms of compute costs and reliability.
 
 But where competing financial concerns limit investment in prevention,
 either the [Trap Enforcement Strategy](#trap-enforcement-strategy) or
-The Log-And-Continue Strategy may be preferable.
+The [Log-And-Continue Strategy](#log-and-continue-strategy) may be preferable.
 
 For example, a RESTful server which persists between requests
 may eventually identify bad state in the form of a contract violation.
@@ -892,7 +892,7 @@ Examples from P2064R0 suggest than a lot of defective code reaches production
 without first being tested using the [Trap Enforcement Strategy](#trap-enforcement-strategy).
 Instead of fixing the offending code, the paper recommends that asserts aren't assumed.
 That is the approach taken by both the [Nonenforcement Strategy](#nonenforcement-strategy)
-and the Log-And-Continue Strategy.
+and the [Log-And-Continue Strategy](#log-and-continue-strategy).
 But for other strategies, it is excessive and harms performance.
 
 ## Example Program
