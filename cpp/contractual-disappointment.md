@@ -390,7 +390,7 @@ their incidence can reduce dramatically by
   [Clang-Tidy](https://clang.llvm.org/extra/clang-tidy),
 * fulfilling the [Test User Contract](#test-user-contract) by writing asserts, and
 * following a thorough testing regime, while
-* taking full advantage of the Trap Enforcement Strategy.
+* taking full advantage of the [Trap Enforcement Strategy](#trap-enforcement-strategy).
 
 The benefits of zero bug tolerance make Prevention Enforcement Strategy compelling.
 Besides safety and security, opportunities for optimisation present themselves:
@@ -435,13 +435,13 @@ Somebody who is testing the program, e.g.
 * a QA/test engineer, or
 * a DevOps engineer programming a CI runner to perform automated tests
 
-will prefer Trap Enforcement Strategy because bugs are a likelihood
-and performance and stability are secondary concerns.
+will prefer [Trap Enforcement Strategy](#trap-enforcement-strategy) because bugs
+are a likelihood and performance and stability are secondary concerns.
 
 #### Safety-Critical System With Redundancy
 
 A safety-critical system *with* backup/redundancy
-will also prefer Trap Enforcement Strategy
+will also prefer [Trap Enforcement Strategy](#trap-enforcement-strategy)
 because allowing the program to continue in an incorrect state
 is an unacceptable risk.
 Examples include life-support systems and autonomous vehicle controllers.
@@ -483,7 +483,8 @@ If they are prepared to perform thorough testing, the Prevention Enforcement Str
 will reap benefits in terms of compute costs and reliability.
 
 But where competing financial concerns limit investment in prevention,
-either the Trap Enforcement Strategy or The Log-And-Continue Strategy may be preferable.
+either the [Trap Enforcement Strategy](#trap-enforcement-strategy) or
+The Log-And-Continue Strategy may be preferable.
 
 For example, a RESTful server which persists between requests
 may eventually identify bad state in the form of a contract violation.
@@ -886,7 +887,7 @@ Consider a program in which `ASSERT` assumes no [Unambiguous Bugs](#unambiguous-
 
 Concerns about assumption-based optimisation are raised in [P2064R0, Assumptions](https://wg21.link/p2064r0).
 Examples from P2064R0 suggest than a lot of defective code reaches production
-without first being tested using the Trap Enforcement Strategy.
+without first being tested using the [Trap Enforcement Strategy](#trap-enforcement-strategy).
 Instead of fixing the offending code, the paper recommends that asserts aren't assumed.
 That is the approach taken by both
 the Nonenforcement Strategy and the Log-And-Continue Strategy.
@@ -1568,7 +1569,7 @@ Additional [Clang sanitizers](https://clang.llvm.org/docs/index.html) are dedica
 to catching bugs at run-time. Some of them work with GCC as well as Clang.
 Tools like Valgrind can also catch some of these bugs.
 
-‡ When used as part of the Trap Enforcement Strategy,
+‡ When used as part of the [Trap Enforcement Strategy](#trap-enforcement-strategy),
 must be used ***instead of*** explicit bug trapping code,
 and ***in conjunction with*** a sanitizer such as UBSan.
 
