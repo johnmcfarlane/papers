@@ -517,7 +517,8 @@ for a good description of the C++ error-handling landscape.)
 Having identified the subset of disappointment that counts as errors,
 the problem remains: how to deliver the bad news to the user.
 This news must often travel great distances across the code.
-As with bugs, Enforcement Profiles affect the choice of solution.
+As with bugs,
+[Enforcement Profiles](#enforcement-profiles) affect the choice of solution.
 Additionally, the choice of error handling technique is affected
 by other prominent characteristics of the code...
 
@@ -905,7 +906,7 @@ illustrate the recommendations collected in this document.
 
 ### Assertion Logic
 
-Here is an example assert function which illustrates different Enforcement Profiles.
+Here is an example assert function which illustrates different [Enforcement Profiles](#enforcement-profiles).
 It is compatible with some modern tool-chains.
 
 ```c++
