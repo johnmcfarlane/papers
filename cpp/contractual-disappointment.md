@@ -366,16 +366,17 @@ Disadvantages:
 
 #### Log-And-Continue Strategy
 
-Additional to the Nonenforcement Strategy, the program can emit a run-time diagnostic.
+Additional to the [Nonenforcement Strategy](#nonenforcement-strategy),
+the program can emit a run-time diagnostic.
 
 Advantages:
 
-* The advantages of the Nonenforcement Strategy apply.
+* The advantages of the [Nonenforcement Strategy](#nonenforcement-strategy) apply.
 * Developers can gain feedback helpful in addressing defects.
 
 Disadvantages:
 
-* The disadvantages of the Nonenforcement Strategy apply.
+* The disadvantages of the [Nonenforcement Strategy](#nonenforcement-strategy) apply.
 * Diagnostic code may increase binary size considerably.
 
 #### Prevention Enforcement Strategy
@@ -459,7 +460,8 @@ doubts regarding [Unambiguous Bugs](#unambiguous-bugs) may linger.
 Optimisations which assume fulfilment of contract violations
 may represent a small — but unnecessary — risk.
 
-Thus, Nonenforcement Strategy or Log-And-Continue Strategy are preferable.
+Thus, [Nonenforcement Strategy](#nonenforcement-strategy) or
+Log-And-Continue Strategy are preferable.
 
 #### Performance-Critical/Resource-Constrained
 
@@ -889,8 +891,8 @@ Concerns about assumption-based optimisation are raised in [P2064R0, Assumptions
 Examples from P2064R0 suggest than a lot of defective code reaches production
 without first being tested using the [Trap Enforcement Strategy](#trap-enforcement-strategy).
 Instead of fixing the offending code, the paper recommends that asserts aren't assumed.
-That is the approach taken by both
-the Nonenforcement Strategy and the Log-And-Continue Strategy.
+That is the approach taken by both the [Nonenforcement Strategy](#nonenforcement-strategy)
+and the Log-And-Continue Strategy.
 But for other strategies, it is excessive and harms performance.
 
 ## Example Program
