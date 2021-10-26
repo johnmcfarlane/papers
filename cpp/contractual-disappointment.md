@@ -332,10 +332,11 @@ Advantages:
   the user is protected from unbounded risk.
 * Feedback is timely and targetted, the developer is compelled to address bugs promptly
   and they are empowered to avoid mistakes in future.
-* Automated tests can identify a great many Unambiguous Bugs
+* Automated tests can identify a great many [Unambiguous Bugs](#unambiguous-bugs)
   in code that uses modern tools and guidelines
   (such as the [C++ Core Guidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines)).
-* Fuzz testing relies on Unambiguous Bugs to identify implementation vulnerabilities.
+* Fuzz testing relies on [Unambiguous Bugs](#unambiguous-bugs)
+  to identify implementation vulnerabilities.
 
 #### Nonenforcement Strategy
 
@@ -453,7 +454,8 @@ might consider Prevention Enforcement Strategy, or Log-And-Continue Strategy.
 However, logging may not be viable for some safety-critical embedded controllers.
 Such minimal systems may not have the facility to log errors or to off-board them.
 
-And despite thorough testing, doubts regarding Unambiguous Bugs may linger.
+And despite thorough testing,
+doubts regarding [Unambiguous Bugs](#unambiguous-bugs) may linger.
 Optimisations which assume fulfilment of contract violations
 may represent a small — but unnecessary — risk.
 
@@ -711,14 +713,16 @@ Usage couldn't be much simpler:
 Abnormal program termination is often shunned in C++ programs.
 The main reason is that it typically bypasses destructors.
 That may not be the biggest worry in a program which is already in a bad
-state, so terminating in reaction to Unambiguous Bugs is relatively palatable.
+state, so terminating in reaction to [Unambiguous Bugs](#unambiguous-bugs)
+is relatively palatable.
 And destructors in a modern, well designed system are only important
 while the process is running:
 memory, file descriptors and peripherals should all be freed up by the system
 once the owning process is ended.
 
 So this can often be the best approach for reacting to violations of the
-[End User Contract](#end-user-contract) — as well as to Unambiguous Bugs. In profile,
+[End User Contract](#end-user-contract) — as well as to [Unambiguous Bugs](#unambiguous-bugs).
+In profile,
 Safety-Critical System With Redundancy, the requirement to 'fail fast' can be well
 served by this approach. And in profile, Business-Critical Systems, the concerns
 associated with bypassing destructors may not be significant.
@@ -854,7 +858,7 @@ Having decided that a potential disappointment is a bug,
 * _don't_ treat it as an error, and
 * _don't_ write code to handle it or to defend against it.
 
-Consider a program in which `ASSERT` assumes no Unambiguous Bugs
+Consider a program in which `ASSERT` assumes no [Unambiguous Bugs](#unambiguous-bugs)
 (as described in Prevention Enforcement Strategy):
 
 ```c++
@@ -983,7 +987,7 @@ The developer shouldn't assume that program input is error-free.
 Even if the users of the program are 'friendly', they may make mistakes which the
 program developer did not anticipate.
 
-In order to be confident that no Unambiguous Bugs can occur,
+In order to be confident that no [Unambiguous Bugs](#unambiguous-bugs) can occur,
 input must be thoroughly vetted.
 If the possible violations by the user of the [End User Contract](#end-user-contract)
 are not tested, all manner of undefined behaviour may result.
@@ -1231,7 +1235,8 @@ the target platform.
 ### Don't Rely on Tools Alone
 
 Unfortunately, sanitizers are far from perfect.
-Some unambiguous bugs are prohibitively difficult to detect at run-time.
+Some [Unambiguous Bugs](#unambiguous-bugs) are
+prohibitively difficult to detect at run-time.
 
 Sometimes, sanitizers fail to instrument for UB as advertised.
 For example, if the logic which recognises the possibility of UB
@@ -1247,7 +1252,8 @@ healthy development process.
 
 ### A Carefully Controlled Vagueness
 
-Nevertheless, the notion of Unambiguous Bugs is every bit as important as type safety.
+Nevertheless, the notion of [Unambiguous Bugs](#unambiguous-bugs)
+is every bit as important as type safety.
 Certainly, it is better to discover bugs early in the development process
 and this is why static typing is so beneficial.
 However, seeking bugs during program execution only increases fortification.
