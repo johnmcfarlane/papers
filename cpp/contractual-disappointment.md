@@ -393,7 +393,8 @@ their incidence can reduce dramatically by
 * following a thorough testing regime, while
 * taking full advantage of the [Trap Enforcement Strategy](#trap-enforcement-strategy).
 
-The benefits of zero bug tolerance make Prevention Enforcement Strategy compelling.
+The benefits of zero bug tolerance make [Prevention Enforcement Strategy](#prevention-enforcement-strategy)
+compelling.
 Besides safety and security, opportunities for optimisation present themselves:
 
 * Assuming assertions hold means that their run-time checks can be elided.
@@ -450,7 +451,8 @@ Examples include life-support systems and autonomous vehicle controllers.
 #### Safety-Critical System Without Redundancy
 
 A safety-critical system *without* backup/redundancy
-might consider Prevention Enforcement Strategy, or [Log-And-Continue Strategy](#log-and-continue-strategy).
+might consider [Prevention Enforcement Strategy](#prevention-enforcement-strategy),
+or [Log-And-Continue Strategy](#log-and-continue-strategy).
 
 However, logging may not be viable for some safety-critical embedded controllers.
 Such minimal systems may not have the facility to log errors or to off-board them.
@@ -466,7 +468,7 @@ Thus, [Nonenforcement Strategy](#nonenforcement-strategy) or
 #### Performance-Critical/Resource-Constrained
 
 Applications which are performance-critical or resource-constrained
-may favour Prevention Enforcement Strategy.
+may favour [Prevention Enforcement Strategy](#prevention-enforcement-strategy).
 
 Applications include
 
@@ -481,7 +483,7 @@ Applications include
 
 Where business interests are at stake but safety and resources are less of a concern,
 the program developer has leeway to choose from a wider range of strategies.
-If they are prepared to perform thorough testing, the Prevention Enforcement Strategy
+If they are prepared to perform thorough testing, the [Prevention Enforcement Strategy](#prevention-enforcement-strategy)
 will reap benefits in terms of compute costs and reliability.
 
 But where competing financial concerns limit investment in prevention,
@@ -862,7 +864,7 @@ Having decided that a potential disappointment is a bug,
 * _don't_ write code to handle it or to defend against it.
 
 Consider a program in which `ASSERT` assumes no [Unambiguous Bugs](#unambiguous-bugs)
-(as described in Prevention Enforcement Strategy):
+(as described in [Prevention Enforcement Strategy](#prevention-enforcement-strategy)):
 
 ```c++
 // precondition: traffic_light must be red, amber or green
