@@ -728,8 +728,8 @@ once the owning process is ended.
 
 So this can often be the best approach for reacting to violations of the
 [End User Contract](#end-user-contract) — as well as to [Unambiguous Bugs](#unambiguous-bugs).
-In profile,
-Safety-Critical System With Redundancy, the requirement to 'fail fast' can be well
+In profile, [Safety-Critical System With Redundancy](#safety-critical-system-with-redundancy),
+the requirement to 'fail fast' can be well
 served by this approach. And in profile, Business-Critical Systems, the concerns
 associated with bypassing destructors may not be significant.
 
