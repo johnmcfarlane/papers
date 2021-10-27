@@ -1456,6 +1456,20 @@ on GCC</a></td>
   </tr>
 
   <tr>
+    <td><i>-D_GLIBCXX_DEBUG</i> or <i>-D_GLIBCXX_DEBUG_PEDANTIC</i></td>
+    <td></td>
+    <td>✓</td>
+    <td></td>
+    <td>✓</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td>enable libstdc++ <a
+href="https://gcc.gnu.org/onlinedocs/libstdc++/manual/debug_mode_using.html">debug
+mode</a></td>
+  </tr>
+
+  <tr>
     <td><i>/D_ITERATOR_DEBUG_LEVEL=2</i></td>
     <td></td>
     <td></td>
