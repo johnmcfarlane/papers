@@ -136,12 +136,16 @@ However, the focus of this document is run-time disappointment.
 
 #### C++ API Contracts
 
+These are the contracts entered into when using or implementing an API in C++.
+API here most often means a function of some sort,
+and the types involved with its invocation.
+
 * agreement: documentation (including self-documentation)
 * provider: C++ API implementer (often also the program developer)
 * user: the program developer
 * violation by user: undefined behaviour
 
-It is helpful to divide [C++ API Contracts](#c-api-contracts) into three subcategories:
+It is helpful to divide C++ API Contracts into three subcategories:
 
 1. statically-enforceable,
 
@@ -181,7 +185,7 @@ The first is the most desirable: the compiler can enforce developer mistakes.
 The second is the least desirable:
 the developer catches these through unit testing and code review.
 The third, [Dynamically-Enforceable C++ API Contracts](#dynamically-enforceable-c-api-contracts),
-carries challenges for enforcement and opportunities for optimisation.
+carries challenges for enforcement and opportunities for discovery and optimisation.
 It is discussed in more detail below.
 
 Note: For most intents and purposes, the library incorporated into
