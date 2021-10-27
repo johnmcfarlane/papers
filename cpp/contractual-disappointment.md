@@ -1303,8 +1303,8 @@ In short:
 
 ## Acknowledgements
 
-Thanks to Alicja Przybyś and Andrzej Krzemieński for much feedback, correction
-and guidance.
+Thanks to Alicja Przybyś, Andrzej Krzemieński, Krister Walfridsson and Phil Nash
+for feedback, correction and guidance.
 
 ## Appendix A - Toolchain-Specific Recommendations
 
