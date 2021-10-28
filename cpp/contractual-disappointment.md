@@ -697,7 +697,7 @@ the costs and benefits of exception handling should be considered more carefully
 
 #### Abnormal Program Termination
 
-A program can be stopped quickly via APIs such as `std::terminate` and `std::abort`.
+A program can be stopped quickly via APIs such as `std::abort`.
 
 A simple error-handling function can be used much like an assert routine:
 
@@ -922,7 +922,7 @@ constexpr void eg_assert(bool condition)
 
 #if defined(TRAP_STRATEGY) // Trap Enforcement Strategy
   // stop the program
-  std::terminate();
+  std::abort();
 #elif defined(NONENFORCEMENT_STRATEGY) // Nonenforcement Strategy
   // do nothing
 #elif defined(LOG_AND_CONTINUE_STRATEGY) // Log-And-Continue Strategy
