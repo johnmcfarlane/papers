@@ -1417,9 +1417,33 @@ and the contracts they affect, are both required to successfully handle disappoi
     <td></td>
     <td>✓</td>
     <td></td>
+    <td>✓</td>
+    <td></td>
+    <td>flag <a href="#c-standard">C++ Standard</a> user contract violations<sup>†</sup></td>
+  </tr>
+
+  <tr>
+    <td><i>-fno-sanitize-recover=all</i></td>
+    <td>✓</td>
+    <td>✓</td>
+    <td></td>
+    <td>✓</td>
     <td></td>
     <td></td>
-    <td>trap <a href="#c-standard">C++ Standard</a> user contract violations<sup>†</sup></td>
+    <td></td>
+    <td>trap bugs flagged with <i>-fsanitize=</i></td>
+  </tr>
+
+  <tr>
+    <td><i>-fsanitize-recover=all</i> etc.</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td>✓</td>
+    <td></td>
+    <td>report bugs flagged with <i>-fsanitize=</i>, then continue</td>
   </tr>
 
   <tr>
